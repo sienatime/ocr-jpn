@@ -1,5 +1,15 @@
+  # -*- coding: utf-8 -*-
 from PIL import Image
-import code
+# import code
+from sys import argv
+
+script, img = argv
+
+def open_threshold_save(im_name, save_name):
+    im = Image.open(im_name).convert("L")
+    new_image = threshold_image(im)
+    save_image(new_image, save_name, "BMP")
+    new_image.show()
 
 def threshold_image(im):
     #this is a tuple
@@ -27,9 +37,10 @@ def save_image(im, filename, filetype):
     im.save(filename, filetype)
 
 def resize_and_crop_image(im):
-    size = 128, 128
-    #if we don't resize the image, it's like, a lot of pixels to deal with...
-    im.thumbnail(size)
+    if im.size[0] > 128:
+        size = 128, 128
+        #if we don't resize the image, it's like, a lot of pixels to deal with...
+        im.thumbnail(size)
 
     out = im.point(lambda i: i * 2)
 
@@ -82,6 +93,9 @@ def compare_to_template(im, template):
     im_x, im_y = im.size
     tmp_x, tmp_y = template.size
 
+    # im.show()
+    # template.show()
+
     #now analyze how similar these two images are
 
     #so probably like, return a difference for each pixel and then do some math and shit. the point() function takes another function as a param and runs that function on each of the pixels. i guess i could compare something completely similar and something completely dissimilar to get my threshold...
@@ -117,20 +131,31 @@ def compare_to_template(im, template):
 
     # code.interact(local=locals())
 
-    return total
-
-def convert_to_percentage(l):
-    return [ item/255.0 * 100 for item in l ]
+    return float(total)/(im_x * im_y)
 
 def main():
-    im = Image.open("o.bmp").convert("L")
+    #from argv use img
+    im = Image.open(img).convert("L")
     new_image = resize_and_crop_image(im)
-    # new_image.show()
 
-    template = Image.open("printot.bmp").convert("L")
-    mincho = Image.open("minchoa.bmp").convert("L")
+    templates = [
+        (u"朝","templates/asat.bmp"),(u"あ","templates/printat.bmp"),(u"あ","templates/minchoat.bmp"),(u"お","templates/printot.bmp")
+        ]
 
-    print compare_to_template(new_image, template)
+    scores = []
+
+    for char, filename in templates:
+        template = Image.open(filename).convert("L")
+        scores.append( (char, filename, compare_to_template(new_image, template)) )
+
+    most_similar = scores[0]
+    print scores
+
+    for i in range(1, len(scores) ):
+        if scores[i][2] < most_similar[2]:
+            most_similar = scores[i]
+
+    print "The image was most similar to ", most_similar[0]
 
 if __name__ == "__main__":
     main()
