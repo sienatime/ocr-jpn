@@ -142,9 +142,11 @@ def main():
         (u"朝","templates/asat.bmp"),(u"あ","templates/printat.bmp"),(u"あ","templates/minchoat.bmp"),(u"お","templates/printot.bmp")
         ]
 
+    small_templates = [(u"朝","templates/smasat.bmp"),(u"あ","templates/smat.bmp"),(u"お","templates/smot.bmp")]
+
     scores = []
 
-    for char, filename in templates:
+    for char, filename in small_templates:
         template = Image.open(filename).convert("L")
         scores.append( (char, filename, compare_to_template(new_image, template)) )
 
