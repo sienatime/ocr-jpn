@@ -93,39 +93,21 @@ def compare_to_template(im, template):
     im_x, im_y = im.size
     tmp_x, tmp_y = template.size
 
-    # im.show()
-    # template.show()
-
-    #now analyze how similar these two images are
-
-    #so probably like, return a difference for each pixel and then do some math and shit. the point() function takes another function as a param and runs that function on each of the pixels. i guess i could compare something completely similar and something completely dissimilar to get my threshold...
-
+    # TODO instead of getpixel of every coord, use list(im.getdata()) (or just im.getdata() which is a PIL object)
 
     im_pixel_vals = []
     #two-dimensional array of the pixels (but like really this is probably not the way to do things)
     for i in range(im_y):
-        l = []
         for j in range(im_x):
-            l.append(im.getpixel((j,i)))
-        im_pixel_vals.append( l )
+            im_pixel_vals.append(im.getpixel((j,i)))
 
     tmp_pixel_vals = []
 
     for i in range(tmp_y):
-        l = []
         for j in range(tmp_x):
-            l.append(template.getpixel((j,i)))
-        tmp_pixel_vals.append(l)
+            tmp_pixel_vals.append(template.getpixel((j,i)))
 
-    differences = []
-
-    for i in range(len(im_pixel_vals)):
-        for j in range(len(im_pixel_vals[i])):
-            differences.append( abs(im_pixel_vals[i][j] - tmp_pixel_vals[i][j]) )
-
-    for i in range(len(differences)):
-        if differences[i] == 255:
-            differences[i] = 1
+    differences = [ int(abs((tmp_pixel_vals[i] - im_pixel_vals[i]))/255) for i in range(len(im_pixel_vals)) ]
 
     total = sum(differences)
 
@@ -139,14 +121,12 @@ def main():
     new_image = resize_and_crop_image(im)
 
     templates = [
-        (u"朝","templates/asat.bmp"),(u"あ","templates/printat.bmp"),(u"あ","templates/minchoat.bmp"),(u"お","templates/printot.bmp")
+        (u"朝","templates/asat.bmp"),(u"あ","templates/printat.bmp"),(u"お","templates/printot.bmp")
         ]
-
-    small_templates = [(u"朝","templates/smasat.bmp"),(u"あ","templates/smat.bmp"),(u"お","templates/smot.bmp")]
 
     scores = []
 
-    for char, filename in small_templates:
+    for char, filename in templates:
         template = Image.open(filename).convert("L")
         scores.append( (char, filename, compare_to_template(new_image, template)) )
 
