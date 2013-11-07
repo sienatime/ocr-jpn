@@ -1,13 +1,14 @@
   # -*- coding: utf-8 -*-
 from PIL import Image
-# import code
+import code
 from sys import argv
 from os import listdir
 
-# code.interact(local=locals())
+AVG_TEMPLATE_HEIGHT = 80
 
-if len(argv) == 2:
-    script, img = argv
+
+if len(argv) == 3:
+    script, img, mode = argv
 
 def open_threshold_save(im_name, save_name):
     im = Image.open(im_name).convert("L")
@@ -20,13 +21,13 @@ def save_image(im, filename, filetype):
 
 def resize_image(im):
     im_x, im_y = im.size
-    avg_template_height = 80.0
-    ratio = avg_template_height/im_y
+    global AVG_TEMPLATE_HEIGHT
+    ratio = float(AVG_TEMPLATE_HEIGHT)/im_y
 
     if ratio > 1:
         out = im.resize((int(im_x*ratio), int(im_y*ratio)), Image.ANTIALIAS)
     else:
-        size = 80,80
+        size = AVG_TEMPLATE_HEIGHT, AVG_TEMPLATE_HEIGHT
         im.thumbnail(size, Image.ANTIALIAS)
         out = im
 
@@ -36,13 +37,17 @@ def threshold_image(im):
     pixel_data = list(im.getdata())
     im_x, im_y = im.size
 
+    threshold_offest = 20
+
     black_pixels = []
+
+    #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
+    avg = sum(pixel_data)/len(pixel_data) - threshold_offest
 
     # threshold the image
     for i in range(im_y):
-        for j in range (im_x):
-            #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
-            if im.getpixel((j,i)) < sum(pixel_data)/len(pixel_data) - 20:
+        for j in range(im_x):
+            if im.getpixel((j,i)) < avg:
                 black_pixels.append((j,i))
                 im.putpixel( (j,i), (0) )
             else:
@@ -97,6 +102,68 @@ def compare_to_template(im, template):
 
     return total
 
+def split_images(im, direction):
+    im_x, im_y = im.size
+    white_cols = []
+
+    if direction == "wide":
+        for i in range(im_x):
+            if im.getpixel((i, 0)) == 255:
+                for j in range(1, im_y):
+                    if im.getpixel(( i, j )) == 0:
+                        break
+                if j == im_y -1:
+                    white_cols.append(i)
+    elif direction == "tall":
+        for i in range(im_y):
+            if im.getpixel((0, i)) == 255:
+                for j in range(1, im_x):
+                    if im.getpixel(( j, i )) == 0:
+                        break
+                if j == im_x -1:
+                    white_cols.append(i)
+
+    split_ranges = []
+    slice_start = 0
+
+    length = len(white_cols)
+
+    for i in range(length):
+        # if i == 11:
+        #     code.interact(local=locals())
+        if i == length-1 or white_cols[i] + 1 != white_cols[i+1]:
+            split_ranges.append( white_cols[slice_start:i+1] )
+            slice_start = i+1
+
+    final_images = []
+    boxes = []
+    start_x = 0
+    start_y = 0
+    
+    if direction == "wide":
+        end = im_y
+
+        for rng in split_ranges:
+            boxes.append( (start_x, start_y, rng[0], end) )
+            start_x = rng[-1] + 1
+
+        boxes.append( (split_ranges[-1][-1], start_y, im_x, end) )
+
+    elif direction == "tall":
+        end = im_x
+
+        for rng in split_ranges:
+            boxes.append( (start_x, start_y, end, rng[0]) )
+            start_y = rng[-1] + 1
+
+        boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
+
+    for box in boxes:
+            new_im = im.crop(box)
+            final_images.append(new_im)
+
+    return final_images
+
 def run_thru_templates(path, im):
     templates = listdir(path)
     scores = []
@@ -111,23 +178,43 @@ def main():
     #from argv use img. L is black and white mode.
     im = Image.open(img).convert("L")
     new_image = process_image(im)
-    
+
+    new_image_x, new_image_y = new_image.size
+
+    input_imgs = [new_image]
+
+    if new_image_x / 1.5 > new_image_y:
+        input_imgs = []
+        input_imgs = split_images(new_image, "wide")
+    elif new_image_y / 1.5 > new_image_x:
+        input_imgs = []
+        input_imgs = split_images(new_image, "tall")
+
     #make sure to end paths with /
-    # paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
-    paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
-    # paths = [ "../templates/kanji/mincho/" ]
+    if mode == "hiragana":
+        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
+    elif mode == "katakana":
+        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
+    elif mode == "kanji":
+        paths = [ "../templates/kanji/mincho/" ]
+    else:
+        print "Please specify hiragana, katakana, or kanji."
 
-    scores = []
+    final_str = ""
 
-    for path in paths:
-        scores = scores + run_thru_templates(path, new_image)
-    
-    sorted_scores = sorted(scores, key=lambda score: score[1]) 
+    for image in input_imgs:
+        scores = []
+        for path in paths:
+            scores = scores + run_thru_templates(path, image)
+        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+        final_str += sorted_scores[0][0].split(".")[0]
+
+    print final_str
 
     #okay I know this is a jerk thing to do but list comprehensions are cool. all this is doing is parsing out the top 3 characters (e.g. removing the filename) from the score list of tuples. HOORAY FOR EXPRESSIONS
-    shortlist = [ score[0].split(".")[0] for score in sorted_scores[:3] ]
+    # shortlist = [ score[0].split(".")[0] for score in sorted_scores[:3] ]
 
-    print "The image was most similar to", shortlist[0]
-    print "The next two candidates are %s and %s" % (shortlist[1], shortlist[2])
+    # print "The image was most similar to", shortlist[0]
+    # print "The next two candidates are %s and %s" % (shortlist[1], shortlist[2])
 
 main()
