@@ -1,58 +1,28 @@
   # -*- coding: utf-8 -*-
 from PIL import Image
 import os
-from imagetests import threshold_image, save_image
+from imagetests import save_image, crop_image
 
-def open_threshold_save(im, save_name):
-    new_image = threshold_image(im)
-    save_image(new_image, save_name, "BMP")
-
-def crop_to_whitespace(im):
-    #this is a tuple
+def threshold_image(im):
     im_x, im_y = im.size
 
-    pixel_vals = []
+    black_pixels = []
 
-    #two-dimensional array of the pixels (but like really this is probably not the way to do things)
+    # threshold the image
     for i in range(im_y):
-        l = []
         for j in range (im_x):
-            l.append(im.getpixel((j,i)))
-        pixel_vals.append( l )
-
-    #umm okay yeah so if the ENTIRE ROW is white, we need that info
-
-    nonwhiterows = []
-
-    for i in range(len(pixel_vals)):
-        for j in range(len(pixel_vals[i])):
-            if pixel_vals[i][j] < 172:
-                nonwhiterows.append((j,i))
+            #this is not the exact same function as in imagetests since we don't need to bother getting the average of the image since we already know what it is.
+            if im.getpixel((j,i)) < 172:
+                black_pixels.append((j,i))
                 im.putpixel( (j,i), (0) )
             else:
                 im.putpixel( (j,i), (255) )
 
-    #so now that I have a list of nonwhite rows, I need to find the extreme x AND y values. so I probably need a list of coordinates anyway. and then i can compare the coordinates to each other. so i should probably have a list of tuples or something.
-
-    upper = nonwhiterows[0][1]
-    lower = nonwhiterows[-1][1]
-
-    min_x = im_x
-    max_x = 0
-
-    for x, y in nonwhiterows:
-        if x < min_x:
-            min_x = x
-        elif x > max_x:
-            max_x = x
-
-    box = (min_x, upper, max_x+1, lower+1)
-
-    region = im.crop(box)
-
-    return region
+    return im, black_pixels
 
 def make_templates(im, kanji):
+    # you are going to want to change the WIDTH and HEIGHT of each character. use the grid in photoshop to help you.
+    # you are also going to want to change the number of kanji per row (you mod by it around line 41)
     width = 200 #125 for kanji
     height = 150 #145 for kanji
     origin = 0
@@ -63,8 +33,10 @@ def make_templates(im, kanji):
         print i
         print box
         work = im.crop(box)
-        new_work = crop_to_whitespace(work)
-        open_threshold_save(new_work, kanji[i-1]+".bmp")
+
+        new_image, black_pixels = threshold_image(work)
+        new_work = crop_image(new_image, black_pixels)
+        save_image(new_work, kanji[i-1]+".bmp", "BMP")
 
         if i % 5 == 0 and i != 0: #8 for kanji
             #go to the next line
@@ -74,13 +46,20 @@ def make_templates(im, kanji):
             box = (box[0]+width, box[1], box[2]+width, box[3])
 
 def main():
+    # HOW TO USE THIS FILE
+    # in word, MAKE SURE your rows are EVENLY SPACED across ALL PAGES. put a hard return in there, it helps! don't let word do them differently!
+    # put all of your images in a folder that you specify in raw_dir
+    # paste the kanji from your word file into raw_kanji
+    # num_chars is the number of characters per page (file)
+    # the template_boxes are where you want to crop the whitespace to (x1,y1,x2,y2)
+    # see more instructions in make_templates()
 
-    raw_dir = "../idk/original mincho files/hiragana"
+    raw_dir = "../idk/original mincho files/katakana"
 
     num_chars = 35 #for kanji templates, 64
 
     list_of_files = os.listdir(raw_dir) 
-    raw_kanji = u"あ　い　う　え　お か　き　く　け　こ さ　し　す　せ　そ た　ち　つ　て　と な　に　ぬ　ね　の は　ひ　ふ　へ　ほ ま　み　む　め　も ら　り　る　れ　ろ わ　を　ん　が　ぎ ぐ　げ　ご　ざ　じ　ず　ぜ　ぞ　だ　ぢ　づ　で　ど　ば　び　ぶ　べ　ぼ　ぱ　ぴ　ぷ　ぺ　ぽ　や　ゆ　よ　ゐ　ゑ"
+    raw_kanji = u"ア　イ　ウ　エ　オ カ　キ　ク　ケ　コ サ　シ　ス　セ　ソ タ　チ　ツ　テ　ト ナ　ニ　ヌ　ネ　ノ ハ　ヒ　フ　ヘ　ホ マ　ミ　ム　メ　モ ラ　リ　ル　レ　ロ ワ　ヲ　ン　ガ　ギ グ　ゲ　ゴ　ザ　ジ ズ　ゼ　ゾ　ダ　ヂ ヅ　デ　ド　バ　ビ ブ　ベ　ボ　パ　ピ　プ　ペ　ポ　ヤ　ユ ヨ　ヱ　ヰ"
     kanji = raw_kanji.split()
     start = 0
     end = num_chars
