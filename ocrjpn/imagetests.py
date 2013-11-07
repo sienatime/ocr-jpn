@@ -102,45 +102,56 @@ def compare_to_template(im, template):
 
     return total
 
-def split_images(im, direction):
-    im_x, im_y = im.size
-    white_cols = []
-
-    if direction == "wide":
-        for i in range(im_x):
-            if im.getpixel((i, 0)) == 255:
-                for j in range(1, im_y):
-                    if im.getpixel(( i, j )) == 0:
-                        break
-                if j == im_y -1:
-                    white_cols.append(i)
-    elif direction == "tall":
-        for i in range(im_y):
-            if im.getpixel((0, i)) == 255:
-                for j in range(1, im_x):
-                    if im.getpixel(( j, i )) == 0:
-                        break
-                if j == im_x -1:
-                    white_cols.append(i)
-
+def find_split_ranges(l):
     split_ranges = []
     slice_start = 0
 
-    length = len(white_cols)
+    length = len(l)
 
     for i in range(length):
         # if i == 11:
         #     code.interact(local=locals())
-        if i == length-1 or white_cols[i] + 1 != white_cols[i+1]:
-            split_ranges.append( white_cols[slice_start:i+1] )
+        if i == length-1 or l[i] + 1 != l[i+1]:
+            split_ranges.append( l[slice_start:i+1] )
             slice_start = i+1
 
+    return split_ranges
+
+def find_white_cols(im):
+    x, y = im.size
+    white_cols = []
+    for i in range(x):
+        if im.getpixel((i, 0)) == 255:
+            for j in range(1, y):
+                if im.getpixel(( i, j )) == 0:
+                    break
+            if j == y - 1:
+                white_cols.append(i)
+    return white_cols
+
+def find_white_rows(im):
+    x, y = im.size
+    white_rows = []
+    for i in range(y):
+        if im.getpixel((0, i)) == 255:
+            for j in range(1, x):
+                if im.getpixel(( j, i )) == 0:
+                    break
+            if j == x - 1:
+                white_rows.append(i)
+    return white_rows
+
+def split_images(im, direction):
+    im_x, im_y = im.size
+    
     final_images = []
     boxes = []
     start_x = 0
     start_y = 0
     
     if direction == "wide":
+        white_cols = find_white_cols(im)
+        split_ranges = find_split_ranges(white_cols)
         end = im_y
 
         for rng in split_ranges:
@@ -150,6 +161,8 @@ def split_images(im, direction):
         boxes.append( (split_ranges[-1][-1], start_y, im_x, end) )
 
     elif direction == "tall":
+        white_rows = find_white_rows(im)
+        split_ranges = find_split_ranges(white_rows)
         end = im_x
 
         for rng in split_ranges:
@@ -159,7 +172,8 @@ def split_images(im, direction):
         boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
 
     for box in boxes:
-            new_im = im.crop(box)
+            cropped = im.crop(box)
+            new_im = process_image(cropped)
             final_images.append(new_im)
 
     return final_images
@@ -207,9 +221,9 @@ def main():
         for path in paths:
             scores = scores + run_thru_templates(path, image)
         sorted_scores = sorted(scores, key=lambda score: score[1]) 
-        final_str += sorted_scores[0][0].split(".")[0]
+        print sorted_scores[0][0].split(".")[0],
 
-    print final_str
+    # print final_str
 
     #okay I know this is a jerk thing to do but list comprehensions are cool. all this is doing is parsing out the top 3 characters (e.g. removing the filename) from the score list of tuples. HOORAY FOR EXPRESSIONS
     # shortlist = [ score[0].split(".")[0] for score in sorted_scores[:3] ]
