@@ -1,7 +1,7 @@
   # -*- coding: utf-8 -*-
 from PIL import Image
 import os
-from imagetests import save_image, crop_image
+from recognize import save_image, crop_image
 
 def threshold_image(im):
     im_x, im_y = im.size
