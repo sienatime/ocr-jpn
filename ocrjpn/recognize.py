@@ -94,50 +94,82 @@ def find_islands(im):
     white = 0
 
     islands = [[None for x in xrange(im_y)] for x in xrange(im_x)] 
-    bl_equalities = {}
-    wh_equalities = {}
+    bl_equalities = set()
+    wh_equalities = set()
 
     for i in range(im_y):
         for j in range(im_x):
             val = im.getpixel((j,i))
             
             try:
-                up = islands[j-1][i]
+                up = islands[j][i-1]
             except(IndexError):
                 up = None
 
             try:
-                left = islands[j][i-1]
+                left = islands[j-1][i]
             except(IndexError):
                 left = None
 
             if val == 0:
                 if up and "black" in up:
-                    if left and "black" in left and up != left:
-                        bl_equalities[up] = left
                     islands[j][i] = up
+                    if left and "black" in left and up != left:
+                        lower = None
+                        upper = None
+                        up_val = up.split("black")[1]
+                        left_val = left.split("black")[1]
+
+                        if up_val < left_val:
+                            lower = up
+                            upper = left
+                        else:
+                            lower = left
+                            upper = up
+
+                        bl_equalities.add((lower, upper))
+                        islands[j][i] = lower
+                    print j, i, up
                 elif left and "black" in left:
-                    if up and "black" in up and left != up:
-                        bl_equalities[left] = up
                     islands[j][i] = left
                 else:
                     black += 1
                     islands[j][i] = "black" + str(black)
             elif val == 255:
                 if up and "white" in up:
-                    if left and "white" in left and up != left:
-                        wh_equalities[up] = left
                     islands[j][i] = up
+                    if left and "white" in left and up != left:
+                        lower = None
+                        upper = None
+                        up_val = up.split("white")[1]
+                        left_val = left.split("white")[1]
+
+                        if up_val < left_val:
+                            lower = up
+                            upper = left
+                        else:
+                            lower = left
+                            upper = up
+
+                        wh_equalities.add((lower, upper))
+                        islands[j][i] = lower
                 elif left and "white" in left:
                     islands[j][i] = left
                 else:
                     white += 1
                     islands[j][i] = "white" + str(white)
 
-    print islands[0]
-    print islands[1]
 
-    return (black-len(bl_equalities.keys()),white-len(wh_equalities.keys()))
+
+    for column in range(im_y):
+        for elt in range(im_x):
+            print islands[elt][column],
+        print "\n"
+
+    print wh_equalities
+    print white
+
+    return (black-len(bl_equalities),white-len(wh_equalities))
 
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.
