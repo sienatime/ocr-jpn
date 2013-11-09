@@ -87,6 +87,58 @@ def process_image(im):
     out, black_pixels = threshold_image(out)
     return crop_image(out, black_pixels)
 
+def find_islands(im):
+    im_x, im_y = im.size
+
+    black = 0
+    white = 0
+
+    islands = [[None for x in xrange(im_y)] for x in xrange(im_x)] 
+    bl_equalities = {}
+    wh_equalities = {}
+
+    for i in range(im_y):
+        for j in range(im_x):
+            val = im.getpixel((j,i))
+            
+            try:
+                up = islands[j-1][i]
+            except(IndexError):
+                up = None
+
+            try:
+                left = islands[j][i-1]
+            except(IndexError):
+                left = None
+
+            if val == 0:
+                if up and "black" in up:
+                    if left and "black" in left and up != left:
+                        bl_equalities[up] = left
+                    islands[j][i] = up
+                elif left and "black" in left:
+                    if up and "black" in up and left != up:
+                        bl_equalities[left] = up
+                    islands[j][i] = left
+                else:
+                    black += 1
+                    islands[j][i] = "black" + str(black)
+            elif val == 255:
+                if up and "white" in up:
+                    if left and "white" in left and up != left:
+                        wh_equalities[up] = left
+                    islands[j][i] = up
+                elif left and "white" in left:
+                    islands[j][i] = left
+                else:
+                    white += 1
+                    islands[j][i] = "white" + str(white)
+
+    print islands[0]
+    print islands[1]
+
+    return (black-len(bl_equalities.keys()),white-len(wh_equalities.keys()))
+
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.
     template = template.resize(im.size)
@@ -216,21 +268,9 @@ def main():
     else:
         print "Please specify hiragana, katakana, or kanji."
 
-    final_str = ""
-
     for image in input_imgs:
         scores = []
         for path in paths:
             scores = scores + run_thru_templates(path, image)
         sorted_scores = sorted(scores, key=lambda score: score[1]) 
         print sorted_scores[0][0].split(".")[0],
-
-    # print final_str
-
-    #okay I know this is a jerk thing to do but list comprehensions are cool. all this is doing is parsing out the top 3 characters (e.g. removing the filename) from the score list of tuples. HOORAY FOR EXPRESSIONS
-    # shortlist = [ score[0].split(".")[0] for score in sorted_scores[:3] ]
-
-    # print "The image was most similar to", shortlist[0]
-    # print "The next two candidates are %s and %s" % (shortlist[1], shortlist[2])
-
-main()
