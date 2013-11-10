@@ -48,6 +48,25 @@ def test_big_kanji():
     i = open_template(list_of_files[3])
     assert_equal( recognize.find_islands(i), (4, 3) )
 
+def test_all_test_kanji():
+    correct = [(4, 3),
+            (3, 5),
+            (3, 5),
+            (4, 3),
+            (3, 4),
+            (3, 3),
+            (2, 3),
+            (2, 4),
+            (7, 2),
+            (6, 3),
+            (6, 7)]
+
+    list_of_files = os.listdir("templates/test/")
+
+    test_answers = [recognize.find_islands(Image.open("templates/test/"+img).convert("L")) for img in list_of_files ]
+
+    assert_equal( test_answers, correct )
+
 def open_image(str):
     path = "test_images/" + str
     return Image.open(path).convert("L")
