@@ -87,6 +87,38 @@ def process_image(im):
     out, black_pixels = threshold_image(out)
     return crop_image(out, black_pixels)
 
+def check_neighbors(color, counter, up, left, eq, final_ctr):
+    if up and color in up:
+        if left and color in left and up != left:
+            add_to_equalities(eq, up, left)
+            final_ctr += 1
+        return up, final_ctr
+    elif left and color in left:
+        return left, final_ctr
+    else:
+        return None, final_ctr
+
+def add_to_equalities(eq, val1, val2):
+    flag = False
+
+    for i in range(len(eq)):
+        l = eq[i]
+        if val1 in eq[i]:
+            flag = True
+            if val2 not in l:
+                l.append(val2)
+                eq[i] = l
+                break
+        elif val2 in eq[i]:
+            flag = True
+            if val1 not in l:
+                l.append(val1)
+                eq[i] = l
+                break
+
+    if not flag or len(eq) == 0:
+        eq.append([val1, val2])
+
 def find_islands(im):
     im_x, im_y = im.size
 
@@ -94,8 +126,10 @@ def find_islands(im):
     white = 0
 
     islands = [[None for x in xrange(im_y)] for x in xrange(im_x)] 
-    bl_equalities = set()
-    wh_equalities = set()
+    bl_equalities = []
+    wh_equalities = []
+    bl_eq = 0
+    wh_eq = 0
 
     for i in range(im_y):
         for j in range(im_x):
@@ -112,64 +146,36 @@ def find_islands(im):
                 left = None
 
             if val == 0:
-                if up and "black" in up:
-                    islands[j][i] = up
-                    if left and "black" in left and up != left:
-                        lower = None
-                        upper = None
-                        up_val = up.split("black")[1]
-                        left_val = left.split("black")[1]
-
-                        if up_val < left_val:
-                            lower = up
-                            upper = left
-                        else:
-                            lower = left
-                            upper = up
-
-                        bl_equalities.add((lower, upper))
-                        islands[j][i] = lower
-                    print j, i, up
-                elif left and "black" in left:
-                    islands[j][i] = left
+                put_val, bl_eq = check_neighbors("black", black, up, left, bl_equalities, bl_eq)
+                if put_val:
+                    islands[j][i] = put_val
                 else:
                     black += 1
                     islands[j][i] = "black" + str(black)
             elif val == 255:
-                if up and "white" in up:
-                    islands[j][i] = up
-                    if left and "white" in left and up != left:
-                        lower = None
-                        upper = None
-                        up_val = up.split("white")[1]
-                        left_val = left.split("white")[1]
-
-                        if up_val < left_val:
-                            lower = up
-                            upper = left
-                        else:
-                            lower = left
-                            upper = up
-
-                        wh_equalities.add((lower, upper))
-                        islands[j][i] = lower
-                elif left and "white" in left:
-                    islands[j][i] = left
+                put_val, wh_eq = check_neighbors("white", white, up, left, wh_equalities, wh_eq)
+                if put_val:
+                    islands[j][i] = put_val
                 else:
                     white += 1
                     islands[j][i] = "white" + str(white)
 
+    # for column in range(im_y):
+    #     for elt in range(im_x):
+    #         print islands[elt][column],
+    #     print "\n"
 
-
-    for column in range(im_y):
-        for elt in range(im_x):
-            print islands[elt][column],
-        print "\n"
-
-    print wh_equalities
+    print black
+    print bl_eq
     print white
+    print wh_eq
 
-    return (black-len(bl_equalities),white-len(wh_equalities))
+    final_b = 0
+
+    for thing in bl_equalities:
+        final_b += len(thing)-1
+
+    return (final_b,white-wh_eq)
 
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.

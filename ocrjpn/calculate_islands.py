@@ -8,6 +8,6 @@ def main():
     for img in list_of_files:
         im = Image.open("../templates/test/"+img).convert("L")
 
-        print find_islands(im)
+        print img, find_islands(im)
 
 main()
