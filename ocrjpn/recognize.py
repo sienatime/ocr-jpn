@@ -97,32 +97,48 @@ def check_neighbors(color, counter, up, left, eq, final_ctr):
     else:
         return None, final_ctr
 
+def search_equalities(eq, val):
+    for i in range(len(eq)):
+        if val in eq[i]:
+            return i
+    return None
+
 def add_to_equalities(eq, val1, val2, final_ctr):
     flag = False
 
-    for i in range(len(eq)):
-        l = eq[i]
-        if val1 in eq[i]:
-            flag = True
-            if val2 not in l:
-                l.append(val2)
-                eq[i] = l
-                final_ctr += 1
-                return final_ctr
-        elif val2 in eq[i]:
-            flag = True
-            if val1 not in l:
-                l.append(val1)
-                eq[i] = l
-                final_ctr += 1
-                return final_ctr
+    val1_i = search_equalities(eq, val1)
+    val2_i = search_equalities(eq, val2)
 
-    if not flag or len(eq) == 0:
+    if val1_i != None and val2_i != None and val1_i != val2_i:
+        join = eq[val1_i] + eq[val2_i]
+        eq[val1_i] = join
+        del eq[val2_i]
         final_ctr += 1
-        print "appending", val1, val2, len(eq)
-        eq.append([val1, val2])
+        return final_ctr
+    else:
+        for i in range(len(eq)):
+            l = eq[i]
+            if val1 in eq[i]:
+                flag = True
+                if val2 not in l:
+                    l.append(val2)
+                    eq[i] = l
+                    final_ctr += 1
+                    return final_ctr
+            elif val2 in eq[i]:
+                flag = True
+                if val1 not in l:
+                    l.append(val1)
+                    eq[i] = l
+                    final_ctr += 1
+                    return final_ctr
 
-    return final_ctr
+        if not flag or len(eq) == 0:
+            final_ctr += 1
+            # print "appending", val1, val2, len(eq)
+            eq.append([val1, val2])
+
+        return final_ctr
 
 def find_islands(im):
     im_x, im_y = im.size
@@ -164,6 +180,8 @@ def find_islands(im):
                 else:
                     white += 1
                     islands[j][i] = "white" + str(white)
+            else:
+                raise TypeError("Non black or white pixel found.")
 
     # for column in range(im_y):
     #     for elt in range(im_x):
