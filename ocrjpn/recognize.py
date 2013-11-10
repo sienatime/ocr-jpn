@@ -90,15 +90,14 @@ def process_image(im):
 def check_neighbors(color, counter, up, left, eq, final_ctr):
     if up and color in up:
         if left and color in left and up != left:
-            add_to_equalities(eq, up, left)
-            final_ctr += 1
+            final_ctr = add_to_equalities(eq, up, left, final_ctr)
         return up, final_ctr
     elif left and color in left:
         return left, final_ctr
     else:
         return None, final_ctr
 
-def add_to_equalities(eq, val1, val2):
+def add_to_equalities(eq, val1, val2, final_ctr):
     flag = False
 
     for i in range(len(eq)):
@@ -108,16 +107,22 @@ def add_to_equalities(eq, val1, val2):
             if val2 not in l:
                 l.append(val2)
                 eq[i] = l
-                break
+                final_ctr += 1
+                return final_ctr
         elif val2 in eq[i]:
             flag = True
             if val1 not in l:
                 l.append(val1)
                 eq[i] = l
-                break
+                final_ctr += 1
+                return final_ctr
 
     if not flag or len(eq) == 0:
+        final_ctr += 1
+        print "appending", val1, val2, len(eq)
         eq.append([val1, val2])
+
+    return final_ctr
 
 def find_islands(im):
     im_x, im_y = im.size
@@ -165,17 +170,12 @@ def find_islands(im):
     #         print islands[elt][column],
     #     print "\n"
 
-    print black
-    print bl_eq
-    print white
-    print wh_eq
+    # print black
+    # print bl_equalities
+    # print white
+    # print wh_equalities
 
-    final_b = 0
-
-    for thing in bl_equalities:
-        final_b += len(thing)-1
-
-    return (final_b,white-wh_eq)
+    return (black-bl_eq,white-wh_eq)
 
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.
