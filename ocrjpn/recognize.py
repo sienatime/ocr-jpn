@@ -219,6 +219,10 @@ def run_thru_templates(path, im):
         
     return scores
 
+def parse_score(score):
+    #score is a tuple constructed like (filename.bmp, score)
+    return unichr(int(score[0].split(".")[0]))
+
 def main():
     #from argv use img. L is black and white mode.
     im = Image.open(img).convert("L")
@@ -226,35 +230,35 @@ def main():
 
     new_image_x, new_image_y = new_image.size
 
-    new_image.show()
-
     input_imgs = [new_image]
 
-    # if new_image_x / 1.5 > new_image_y:
-    #     input_imgs = []
-    #     input_imgs = split_images(new_image, "wide")
-    # elif new_image_y / 1.5 > new_image_x:
-    #     input_imgs = []
-    #     input_imgs = split_images(new_image, "tall")
+    if new_image_x / 1.5 > new_image_y:
+        input_imgs = []
+        input_imgs = split_images(new_image, "wide")
+    elif new_image_y / 1.5 > new_image_x:
+        input_imgs = []
+        input_imgs = split_images(new_image, "tall")
 
-    # # make sure to end paths with /
-    # if mode == "hiragana":
-    #     paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
-    # elif mode == "katakana":
-    #     paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
-    # elif mode == "kanji":
-    #     paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/"]
-    # else:
-    #     print "Please specify hiragana, katakana, or kanji."
+    # make sure to end paths with /
+    if mode == "hiragana":
+        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
+    elif mode == "katakana":
+        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
+    elif mode == "kanji":
+        paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
+    else:
+        print "Please specify hiragana, katakana, or kanji."
 
-    # for image in input_imgs:
-    #     # image.show()
-    #     scores = []
-    #     for path in paths:
-    #         scores = scores + run_thru_templates(path, image)
-    #     sorted_scores = sorted(scores, key=lambda score: score[1]) 
-    #     print sorted_scores
-    #     print sorted_scores[0][0].split(".")[0],
+    for image in input_imgs:
+        # image.show()
+        scores = []
+        for path in paths:
+            scores = scores + run_thru_templates(path, image)
+        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+        filename = sorted_scores[0][0].split(".")[0]
+        print parse_score(sorted_scores[0]), sorted_scores[0][1]
+        # print parse_score(sorted_scores[1]), sorted_scores[1][1]
+        # print parse_score(sorted_scores[2]), sorted_scores[2][1]
 
 if __name__ == "__main__":
     main()
