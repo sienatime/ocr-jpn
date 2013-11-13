@@ -1,13 +1,16 @@
 from PIL import Image
-from recognize import find_islands
+from find_islands import find_islands
 import os
 
 def main():
-    list_of_files = os.listdir("../templates/test/")
+    path = "../templates/kanji/mincho/"
+    list_of_files = os.listdir(path)
 
     for img in list_of_files:
-        im = Image.open("../templates/test/"+img).convert("L")
+        im = Image.open(path+img).convert("L")
 
-        print img, find_islands(im)
+        black, white = find_islands(im)
+        print black, white
 
-main()
+if __name__ == "__main__":
+    main()
