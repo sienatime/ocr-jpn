@@ -4,6 +4,8 @@ from PIL import ImageChops
 import code
 from sys import argv
 from os import listdir
+from islands import find_islands
+from calculate_islands import KanjiObj
 
 AVG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
@@ -115,7 +117,9 @@ def process_image(im):
 
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.
+
     template = template.resize(im.size)
+
     im_x, im_y = im.size
     tmp_x, tmp_y = template.size
 
@@ -220,8 +224,8 @@ def run_thru_templates(path, im):
     return scores
 
 def parse_score(score):
-    #score is a tuple constructed like (filename.bmp, score)
-    return unichr(int(score[0].split(".")[0]))
+    # score is a tuple constructed like (filename.bmp, score)
+    return int(score[0].split(".")[0])
 
 def main():
     #from argv use img. L is black and white mode.
@@ -245,7 +249,7 @@ def main():
     elif mode == "katakana":
         paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
     elif mode == "kanji":
-        paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
+        paths = [ "../templates/kanji/test/"]
     else:
         print "Please specify hiragana, katakana, or kanji."
 
