@@ -7,16 +7,16 @@ def main():
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    path = "../templates/hiragana/mincho/"
+    path = "../templates/kanji/mincho/"
     list_of_files = os.listdir(path)
 
-    for i in range(1):
+    for i in range(len(list_of_files)):
         f = list_of_files[i]
         im = Image.open(path+f).convert("L")
 
         code = f.split(".")[0]
         black, white = find_islands(im)
-        char_type = "hiragana"
+        char_type = "kanji"
         font = "mincho"
         im_path = path + f
         jouyou = True

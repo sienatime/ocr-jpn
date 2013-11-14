@@ -1,17 +1,16 @@
   # -*- coding: utf-8 -*-
 from PIL import Image
 from PIL import ImageChops
-import code
 from sys import argv
-from os import listdir
 from islands import find_islands
-from calculate_islands import KanjiObj
+import psycopg2
+# import code
 
 AVG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
 
-if len(argv) == 3:
-    script, img, mode = argv
+if len(argv) == 2:
+    script, img = argv
 
 def open_threshold_save(im_name, save_name):
     im = Image.open(im_name).convert("L")
@@ -210,22 +209,30 @@ def split_images(im, direction):
 
     return final_images
 
-def run_thru_templates(path, im):
-    templates = listdir(path)
-    scores = []
+def run_thru_templates(im):
+    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    cur = conn.cursor()
 
-    for filename in templates:
-        try:
-            template = Image.open(path+filename).convert("L")
-            scores.append( (filename, compare_to_template(im, template)) )
-        except(IOError):
-            print "couldn't open file:", filename
-        
+    im_black, im_white = find_islands(im)
+    print "test image islands", im_black, im_white
+    # im.show()
+    # cur.execute("SELECT code, img_path from characters where blacks = %s and whites = %s;", (im_black, im_white))
+    cur.execute("SELECT code, img_path from characters;")
+    matches = cur.fetchall()
+    print "selected %d rows" % len(matches)
+
+    scores = []
+    for row in matches:
+        code, img_path = row
+        template = Image.open(img_path).convert("L")
+        scores.append( (code, compare_to_template(im, template)) )
+
     return scores
 
 def parse_score(score):
     # score is a tuple constructed like (filename.bmp, score)
-    return int(score[0].split(".")[0])
+    # i would really like to wrap this in a try/catch in case unichr() freaks out
+    return unichr(score[0])
 
 def main():
     #from argv use img. L is black and white mode.
@@ -243,26 +250,14 @@ def main():
         input_imgs = []
         input_imgs = split_images(new_image, "tall")
 
-    # make sure to end paths with /
-    if mode == "hiragana":
-        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
-    elif mode == "katakana":
-        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
-    elif mode == "kanji":
-        paths = [ "../templates/kanji/test/"]
-    else:
-        print "Please specify hiragana, katakana, or kanji."
-
     for image in input_imgs:
         # image.show()
         scores = []
-        for path in paths:
-            scores = scores + run_thru_templates(path, image)
+        scores = scores + run_thru_templates(image)
         sorted_scores = sorted(scores, key=lambda score: score[1]) 
-        filename = sorted_scores[0][0].split(".")[0]
         print parse_score(sorted_scores[0]), sorted_scores[0][1]
-        # print parse_score(sorted_scores[1]), sorted_scores[1][1]
-        # print parse_score(sorted_scores[2]), sorted_scores[2][1]
+        print parse_score(sorted_scores[1]), sorted_scores[1][1]
+        print parse_score(sorted_scores[2]), sorted_scores[2][1]
 
 if __name__ == "__main__":
     main()

@@ -12,7 +12,6 @@ def run_thru_templates(im):
     cur = conn.cursor()
 
     im_black, im_white = find_islands(im)
-    # query = "SELECT * from characters where blacks = %s and whites = %s;", (im_black, im_white)
     cur.execute("SELECT code, img_path from characters where blacks = %s and whites = %s;", (im_black, im_white))
     matches = cur.fetchall()
 
