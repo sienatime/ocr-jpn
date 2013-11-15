@@ -4,9 +4,10 @@ from PIL import ImageChops
 from sys import argv
 from islands import find_islands
 import psycopg2
+from os import listdir
 # import code
 
-AVG_TEMPLATE_HEIGHT = 80
+AVG_BIG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
 verbose = True
 
@@ -49,13 +50,13 @@ def resize_image(im, avg):
     #     im = ImageChops.invert(im)
 
     im_x, im_y = im.size
-    global AVG_TEMPLATE_HEIGHT
-    ratio = float(AVG_TEMPLATE_HEIGHT)/im_y
+    global AVG_BIG_TEMPLATE_HEIGHT
+    ratio = float(AVG_BIG_TEMPLATE_HEIGHT)/im_y
 
     if ratio > 1:
         out = im.resize((int(im_x*ratio), int(im_y*ratio)), Image.ANTIALIAS)
     else:
-        size = AVG_TEMPLATE_HEIGHT, AVG_TEMPLATE_HEIGHT
+        size = AVG_BIG_TEMPLATE_HEIGHT, AVG_BIG_TEMPLATE_HEIGHT
         im.thumbnail(size, Image.ANTIALIAS)
         out = im
 
@@ -109,8 +110,8 @@ def process_image(im):
     #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
     avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
 
-    out = resize_image(im, avg)
-    thrs, black_pixels = threshold_image(out, avg)
+    # out = resize_image(im, avg)
+    thrs, black_pixels = threshold_image(im, avg)
 
     return crop_image(thrs, black_pixels)
 
@@ -209,7 +210,25 @@ def split_images(im, direction):
 
     return final_images
 
-def run_thru_templates(im, island_range):
+def run_thru_templates_local(path, im):
+    templates = listdir(path)
+    scores = []
+
+    for filename in templates:
+        try:
+            template = Image.open(path+filename).convert("L")
+            if "mincho" in path:
+                font = "mincho"
+            elif "gothic" in path:
+                font = "gothic"
+            scores.append( (filename, compare_to_template(im, template), font) )
+        except(IOError):
+            print "couldn't open file:", filename
+        
+    return scores
+
+def run_thru_templates_db(im, island_range, tmp_size):
+    print 'Looking through %s templates' % tmp_size
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
@@ -218,7 +237,7 @@ def run_thru_templates(im, island_range):
         print "test image islands", im_black, im_white
     # im.show()
     if island_range == 0:
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and blacks = %s and whites = %s;", (mode, im_black, im_white))
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and blacks = %s and whites = %s;", (mode, tmp_size, im_black, im_white))
     else:
         black_lower = im_black-island_range
         white_lower = im_white-island_range
@@ -230,7 +249,7 @@ def run_thru_templates(im, island_range):
         print "searching black islands", black_lower, im_black+island_range
         print "searching white islands", white_lower, im_white+island_range
 
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and (blacks = %s or blacks = %s) and (whites = %s or whites = %s);", (mode, black_lower, im_black+island_range, white_lower, im_white+island_range))
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (blacks = %s or blacks = %s) and (whites = %s or whites = %s);", (mode, tmp_size, black_lower, im_black+island_range, white_lower, im_white+island_range))
     # cur.execute("SELECT code, img_path from characters;")
     matches = cur.fetchall()
     if verbose:
@@ -249,10 +268,46 @@ def parse_score(score):
     # i would really like to wrap this in a try/catch in case unichr() freaks out
     return unichr(score[0])
 
+def search_local(input_imgs, paths):
+    for image in input_imgs:
+        black, white = find_islands(image)
+        print "black: %s white: %s" % (black, white)
+        scores = []
+        for path in paths:
+            scores = scores + run_thru_templates_local(path, image)
+        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+        print"***********WINNER***********", unichr(int(sorted_scores[0][0].split(".")[0])), sorted_scores[0][1], sorted_scores[0][2]
+
+def search_db(input_imgs, compare_size):
+    for image in input_imgs:
+        if compare_size < AVG_BIG_TEMPLATE_HEIGHT:
+                tmp_size = 'small'
+        else:
+            tmp_size = 'big'
+
+        scores = []
+        scores = scores + run_thru_templates_db(image, 0, tmp_size)
+        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+
+        final_score = sorted_scores[0][1]
+        island_range = 1
+
+        while final_score > 0.29:
+            print "going again because", parse_score(sorted_scores[0]), "wasn't high enough"
+            scores = []
+            scores = scores + run_thru_templates_db(image, island_range, tmp_size)
+            sorted_scores = sorted(scores, key=lambda score: score[1]) 
+            island_range += 1
+            final_score = sorted_scores[0][1]
+    
+        print "***********WINNER***********", parse_score(sorted_scores[0]), sorted_scores[0][1], sorted_scores[0][2]
+
 def main():
     #from argv use img. L is black and white mode.
     print mode
     im = Image.open(img).convert("L")
+    im_x, im_y = im.size
+
     new_image = process_image(im)
 
     new_image_x, new_image_y = new_image.size
@@ -262,33 +317,16 @@ def main():
     if new_image_x / 1.5 > new_image_y:
         input_imgs = []
         input_imgs = split_images(new_image, "wide")
+        compare_size = im_x
     elif new_image_y / 1.5 > new_image_x:
         input_imgs = []
         input_imgs = split_images(new_image, "tall")
+        compare_size = im_y
 
-    for image in input_imgs:
-        scores = []
-        scores = scores + run_thru_templates(image, 0)
-        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+    paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
 
-        final_score = sorted_scores[0][1]
-        island_range = 1
-
-        while final_score > 0.29:
-            print "going again because", parse_score(sorted_scores[0]), "wasn't high enough"
-            scores = []
-            scores = scores + run_thru_templates(image, island_range)
-            sorted_scores = sorted(scores, key=lambda score: score[1]) 
-            island_range += 1
-            final_score = sorted_scores[0][1]
-    
-        print "***********WINNER***********", parse_score(sorted_scores[0]), sorted_scores[0][1], sorted_scores[0][2]
-        # if verbose:
-        #     print parse_score(sorted_scores[1]), sorted_scores[1][1], sorted_scores[1][2]
-        #     print parse_score(sorted_scores[2]), sorted_scores[2][1], sorted_scores[2][2]
-
-    # for image in input_imgs:
-    #     image.show()
+    # search_db(input_imgs, compare_size)
+    search_local(input_imgs, paths)
 
 if __name__ == "__main__":
     main()

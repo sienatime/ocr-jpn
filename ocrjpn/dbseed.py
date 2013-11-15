@@ -3,12 +3,15 @@ from PIL import Image
 import os
 from islands import find_islands
 
-def main():
-    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
-    cur = conn.cursor()
+CONN = None
+CUR = None
 
-    path = "../templates/kanji/mincho extra/"
-    list_of_files = os.listdir(path)
+def insert_from_list(path, list_of_files):
+    global CUR
+    if "mincho" in path:
+        font = "mincho"
+    elif "gothic" in path:
+        font = "gothic"
 
     for i in range(len(list_of_files)):
         f = list_of_files[i]
@@ -17,13 +20,24 @@ def main():
         code = f.split(".")[0]
         black, white = find_islands(im)
         char_type = "kanji"
-        font = "mincho"
         im_path = path + f
-        jouyou = False
+        jouyou = True
+        size = 'small'
 
-        cur.execute("INSERT INTO characters (code, blacks, whites, char_type, font, img_path, jouyou) VALUES (%s,%s,%s,%s,%s,%s,%s);", (code, black, white, char_type, font, im_path, jouyou))
+        CUR.execute("INSERT INTO characters (code, blacks, whites, char_type, font, img_path, jouyou, img_size) VALUES (%s,%s,%s,%s,%s,%s,%s,%s);", (code, black, white, char_type, font, im_path, jouyou, size))
 
-    conn.commit()
+def main():
+    global CONN
+    global CUR
+    CONN = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    CUR = CONN.cursor()
+
+    path = "../templates/kanji/small mincho/"
+    list_of_files = os.listdir(path)
+
+    insert_from_list(path, list_of_files)
+
+    CONN.commit()
 
 
 if __name__ == "__main__":

@@ -23,8 +23,8 @@ def threshold_image(im):
 def make_templates(im, kanji):
     # you are going to want to change the WIDTH and HEIGHT of each character. use the grid in photoshop to help you.
     # you are also going to want to change the number of kanji per row (you mod by it around line 41)
-    width = 150 #125 for mincho kanji, 200 for kana
-    height = 150 #145 for kanji, 150 for kana
+    width = 150 #125 for mincho kanji, 150 for gothic, 200 for kana, 39 for small kanji
+    height = 150 #145 for kanji, 150 for gothic, 150 for kana, 34 for small kanji
     origin = 0
     box = (0, 0, width, height)
     row = 1
@@ -38,7 +38,7 @@ def make_templates(im, kanji):
         new_work = crop_image(new_image, black_pixels)
         save_image(new_work, str(ord(kanji[i-1]))+".bmp", "BMP")
 
-        if i % 6 == 0 and i != 0: #8 for mincho kanji, 5 for kana
+        if i % 6 == 0 and i != 0: #8 for mincho kanji, 6 for gothic, 5 for kana, 25 for small kanji
             #go to the next line
             box = (origin, origin + (row*height), width, height*(row+1))
             row += 1
@@ -54,19 +54,20 @@ def main():
     # the template_boxes are where you want to crop the whitespace to (x1,y1,x2,y2)
     # see more instructions in make_templates()
 
-    raw_dir = "../idk/original mincho files/oops"
+    raw_dir = "../idk/original gothic files/oops again"
 
-    num_chars = 48 #for mincho kanji templates, 64, for kana, 35
+    num_chars = 64 #for mincho kanji templates, 64, for kana, 35. for small kanji, 925
 
     list_of_files = os.listdir(raw_dir) 
-    raw_kanji = u"頭 曜 顔"
+    raw_kanji = u"哺 楷 毀 賂 錮"
     kanji = raw_kanji.split()
     start = 0
     end = num_chars
 
     kanji_template_box_m = (125,145,1145,1305) # 1020 x 1160
-    kanji_template_box_g = (117, 141, 1017, 1341)
+    kanji_template_box_g = (117, 141, 1017, 1341) # use this one if this spaces are also in a japanese font
     kana_template_box = (95,148,1095,1198)
+    sm_kanji_box = (142, 147, 1117, 1414)
 
     print len(kanji)
 
@@ -75,6 +76,7 @@ def main():
         im = Image.open(raw_dir+"/"+f).convert("L")
 
         cropped = im.crop(kanji_template_box_g)
+        # cropped.show()
         make_templates(cropped, kanji[start:end])
         start += num_chars
         end += num_chars
