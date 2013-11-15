@@ -110,8 +110,8 @@ def process_image(im):
     #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
     avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
 
-    # out = resize_image(im, avg)
-    thrs, black_pixels = threshold_image(im, avg)
+    out = resize_image(im, avg)
+    thrs, black_pixels = threshold_image(out, avg)
 
     return crop_image(thrs, black_pixels)
 
