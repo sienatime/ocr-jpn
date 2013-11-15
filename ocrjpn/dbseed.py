@@ -7,7 +7,7 @@ def main():
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    path = "../templates/kanji/mincho/"
+    path = "../templates/kanji/mincho extra/"
     list_of_files = os.listdir(path)
 
     for i in range(len(list_of_files)):
@@ -19,7 +19,7 @@ def main():
         char_type = "kanji"
         font = "mincho"
         im_path = path + f
-        jouyou = True
+        jouyou = False
 
         cur.execute("INSERT INTO characters (code, blacks, whites, char_type, font, img_path, jouyou) VALUES (%s,%s,%s,%s,%s,%s,%s);", (code, black, white, char_type, font, im_path, jouyou))
 

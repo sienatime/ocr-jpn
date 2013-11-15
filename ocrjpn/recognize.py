@@ -8,9 +8,10 @@ import psycopg2
 
 AVG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
+verbose = True
 
-if len(argv) == 2:
-    script, img = argv
+if len(argv) == 3:
+    script, img, mode = argv
 
 def open_threshold_save(im_name, save_name):
     im = Image.open(im_name).convert("L")
@@ -43,9 +44,9 @@ def sample_corners(im, im_avg):
         return False
 
 def resize_image(im, avg):
-    if sample_corners(im, avg):
-        print "inverting image"
-        im = ImageChops.invert(im)
+    # if sample_corners(im, avg):
+    #     print "inverting image"
+    #     im = ImageChops.invert(im)
 
     im_x, im_y = im.size
     global AVG_TEMPLATE_HEIGHT
@@ -62,7 +63,6 @@ def resize_image(im, avg):
 
 def threshold_image(im, avg):
     im_x, im_y = im.size
-
     black_pixels = []
 
     # threshold the image
@@ -110,9 +110,9 @@ def process_image(im):
     avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
 
     out = resize_image(im, avg)
-    out, black_pixels = threshold_image(out, avg)
+    thrs, black_pixels = threshold_image(out, avg)
 
-    return crop_image(out, black_pixels)
+    return crop_image(thrs, black_pixels)
 
 def compare_to_template(im, template):
     #I've been finding it better to resize the template to the image at hand, rather than the other way around, although at this point the image at hand should already be pretty close in size to most of the templates.
@@ -129,7 +129,7 @@ def compare_to_template(im, template):
     #xor the values of both images. the pixels that are different will give us a "score" as to how different the images are. lower scores mean more similarity.
     differences = [ int(abs((tmp_pixel_vals[i] - im_pixel_vals[i]))/255) for i in range(len(im_pixel_vals)) ]
 
-    total = sum(differences)
+    total = sum(differences)/float(len(im_pixel_vals))
 
     return total
 
@@ -203,29 +203,44 @@ def split_images(im, direction):
         boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
 
     for box in boxes:
-            cropped = im.crop(box)
-            new_im = process_image(cropped)
-            final_images.append(new_im)
+        cropped = im.crop(box)
+        new_im = process_image(cropped)
+        final_images.append(new_im)
 
     return final_images
 
-def run_thru_templates(im):
+def run_thru_templates(im, island_range):
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
     im_black, im_white = find_islands(im)
-    print "test image islands", im_black, im_white
+    if verbose:
+        print "test image islands", im_black, im_white
     # im.show()
-    # cur.execute("SELECT code, img_path from characters where blacks = %s and whites = %s;", (im_black, im_white))
-    cur.execute("SELECT code, img_path from characters;")
+    if island_range == 0:
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and blacks = %s and whites = %s;", (mode, im_black, im_white))
+    else:
+        black_lower = im_black-island_range
+        white_lower = im_white-island_range
+        if black_lower < 1:
+            black_lower = 1
+        elif white_lower < 1:
+            white_lower = 1
+
+        print "searching black islands", black_lower, im_black+island_range
+        print "searching white islands", white_lower, im_white+island_range
+
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and (blacks = %s or blacks = %s) and (whites = %s or whites = %s);", (mode, black_lower, im_black+island_range, white_lower, im_white+island_range))
+    # cur.execute("SELECT code, img_path from characters;")
     matches = cur.fetchall()
-    print "selected %d rows" % len(matches)
+    if verbose:
+        print "selected %d rows" % len(matches)
 
     scores = []
     for row in matches:
-        code, img_path = row
+        code, img_path, font = row
         template = Image.open(img_path).convert("L")
-        scores.append( (code, compare_to_template(im, template)) )
+        scores.append( (code, compare_to_template(im, template), font) )
 
     return scores
 
@@ -236,6 +251,7 @@ def parse_score(score):
 
 def main():
     #from argv use img. L is black and white mode.
+    print mode
     im = Image.open(img).convert("L")
     new_image = process_image(im)
 
@@ -251,13 +267,28 @@ def main():
         input_imgs = split_images(new_image, "tall")
 
     for image in input_imgs:
-        # image.show()
         scores = []
-        scores = scores + run_thru_templates(image)
+        scores = scores + run_thru_templates(image, 0)
         sorted_scores = sorted(scores, key=lambda score: score[1]) 
-        print parse_score(sorted_scores[0]), sorted_scores[0][1]
-        print parse_score(sorted_scores[1]), sorted_scores[1][1]
-        print parse_score(sorted_scores[2]), sorted_scores[2][1]
+
+        final_score = sorted_scores[0][1]
+        island_range = 1
+
+        while final_score > 0.29:
+            print "going again because", parse_score(sorted_scores[0]), "wasn't high enough"
+            scores = []
+            scores = scores + run_thru_templates(image, island_range)
+            sorted_scores = sorted(scores, key=lambda score: score[1]) 
+            island_range += 1
+            final_score = sorted_scores[0][1]
+    
+        print "***********WINNER***********", parse_score(sorted_scores[0]), sorted_scores[0][1], sorted_scores[0][2]
+        # if verbose:
+        #     print parse_score(sorted_scores[1]), sorted_scores[1][1], sorted_scores[1][2]
+        #     print parse_score(sorted_scores[2]), sorted_scores[2][1], sorted_scores[2][2]
+
+    # for image in input_imgs:
+    #     image.show()
 
 if __name__ == "__main__":
     main()
