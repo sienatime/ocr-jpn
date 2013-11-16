@@ -252,16 +252,20 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
         print "test image islands", im_white
     # im.show()
 
-    island_mode = False
-    if island_mode:
-        if island_range == 0 or not white_lower:
-            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
-        else:
-            print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
-            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
-
+    if char_type != 'kanji':
+        # if it's the kana, just search through those by themselves, it's fast enough.
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s;", (char_type, tmp_size))
     else:
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites is not null;", (char_type, tmp_size))
+        island_mode = True
+        if island_mode:
+            if island_range == 0 or not white_lower:
+                cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
+            else:
+                print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
+                cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
+
+        else:
+            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites is not null;", (char_type, tmp_size))
     
     matches = cur.fetchall()
 
