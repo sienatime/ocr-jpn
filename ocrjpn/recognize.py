@@ -5,11 +5,15 @@ from sys import argv
 from islands import find_islands
 import psycopg2
 from os import listdir
-# import code
+import pdb
+from time import clock
 
 AVG_BIG_TEMPLATE_HEIGHT = 80
+AVG_SMALL_TEMPLATE_HEIGHT = 22
 THRESHOLD_OFFSET = 20
 verbose = True
+LAST_TIME = None
+TOTAL_TIME = []
 
 if len(argv) == 3:
     script, img, mode = argv
@@ -51,14 +55,19 @@ def resize_image(im, avg):
 
     im_x, im_y = im.size
     global AVG_BIG_TEMPLATE_HEIGHT
-    ratio = float(AVG_BIG_TEMPLATE_HEIGHT)/im_y
+    global AVG_SMALL_TEMPLATE_HEIGHT
 
-    if ratio > 1:
-        out = im.resize((int(im_x*ratio), int(im_y*ratio)), Image.ANTIALIAS)
+    big_ratio = float(AVG_BIG_TEMPLATE_HEIGHT)/im_y
+    small_ratio = float(AVG_SMALL_TEMPLATE_HEIGHT)/im_y
+
+    if big_ratio > 1:
+        out = im.resize((int(im_x*big_ratio), int(im_y*big_ratio)), Image.ANTIALIAS)
     else:
         size = AVG_BIG_TEMPLATE_HEIGHT, AVG_BIG_TEMPLATE_HEIGHT
         im.thumbnail(size, Image.ANTIALIAS)
         out = im
+
+    # pdb.set_trace()
 
     return out
 
@@ -227,31 +236,38 @@ def run_thru_templates_local(path, im):
         
     return scores
 
-def run_thru_templates_db(im, island_range, tmp_size):
-    print 'Looking through %s templates' % tmp_size
+def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
+    print "Looking through %s templates" % tmp_size
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    im_black, im_white = find_islands(im)
-    if verbose:
-        print "test image islands", im_black, im_white
-    # im.show()
-    if island_range == 0:
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and blacks = %s and whites = %s;", (mode, tmp_size, im_black, im_white))
+    if mode == "smkanji":
+        char_type = "kanji"
     else:
-        black_lower = im_black-island_range
-        white_lower = im_white-island_range
-        if black_lower < 1:
-            black_lower = 1
-        elif white_lower < 1:
-            white_lower = 1
+        char_type = mode
 
-        print "searching black islands", black_lower, im_black+island_range
-        print "searching white islands", white_lower, im_white+island_range
+    print white_lower
 
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (blacks = %s or blacks = %s) and (whites = %s or whites = %s);", (mode, tmp_size, black_lower, im_black+island_range, white_lower, im_white+island_range))
-    # cur.execute("SELECT code, img_path from characters;")
+    if verbose:
+        print "test image islands", im_white
+    # im.show()
+
+    island_mode = False
+    if island_mode:
+        if island_range == 0 or not white_lower:
+            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
+        else:
+            print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
+            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
+
+    else:
+        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites is not null;", (char_type, tmp_size))
+    
     matches = cur.fetchall()
+
+    if not matches:
+        raise LookupError("Didn't select any rows from the database.")
+
     if verbose:
         print "selected %d rows" % len(matches)
 
@@ -259,7 +275,8 @@ def run_thru_templates_db(im, island_range, tmp_size):
     for row in matches:
         code, img_path, font = row
         template = Image.open(img_path).convert("L")
-        scores.append( (code, compare_to_template(im, template), font) )
+        the_score = compare_to_template(im, template)
+        scores.append( (code, the_score, font) )
 
     return scores
 
@@ -269,6 +286,7 @@ def parse_score(score):
     return unichr(score[0])
 
 def search_local(input_imgs, paths):
+    print "SEARCHING LOCAL TEMPLATES"
     for image in input_imgs:
         black, white = find_islands(image)
         print "black: %s white: %s" % (black, white)
@@ -276,35 +294,68 @@ def search_local(input_imgs, paths):
         for path in paths:
             scores = scores + run_thru_templates_local(path, image)
         sorted_scores = sorted(scores, key=lambda score: score[1]) 
+        print_time()
         print"***********WINNER***********", unichr(int(sorted_scores[0][0].split(".")[0])), sorted_scores[0][1], sorted_scores[0][2]
 
 def search_db(input_imgs, compare_size):
+    print "SEARCHING DATABASE"
+
+    valid_white_vals = set([25,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0])
+
     for image in input_imgs:
-        if compare_size < AVG_BIG_TEMPLATE_HEIGHT:
-                tmp_size = 'small'
+        im_black, im_white = find_islands(image)
+
+        if compare_size < AVG_BIG_TEMPLATE_HEIGHT or mode == 'smkanji':
+            tmp_size = 'small'
         else:
             tmp_size = 'big'
 
-        scores = []
-        scores = scores + run_thru_templates_db(image, 0, tmp_size)
-        sorted_scores = sorted(scores, key=lambda score: score[1]) 
+        final_score = 1
+        island_range = 0
+        white_upper = im_white
 
-        final_score = sorted_scores[0][1]
-        island_range = 1
+        while white_upper not in valid_white_vals:
+            #pick another one
+            print "not a valid number of white islands"
+            white_upper -= 1
 
-        while final_score > 0.29:
-            print "going again because", parse_score(sorted_scores[0]), "wasn't high enough"
+        while final_score > 0.295:
+            print "searching..."
+            white_lower = im_white-island_range
+            if white_lower <= 1:
+                white_lower = None
+
             scores = []
-            scores = scores + run_thru_templates_db(image, island_range, tmp_size)
+            scores = scores + run_thru_templates_db(image, island_range, tmp_size, white_lower, white_upper)
             sorted_scores = sorted(scores, key=lambda score: score[1]) 
             island_range += 1
             final_score = sorted_scores[0][1]
     
+        print_time()
         print "***********WINNER***********", parse_score(sorted_scores[0]), sorted_scores[0][1], sorted_scores[0][2]
+
+def print_time():
+    global LAST_TIME
+    global TOTAL_TIME
+    this_time = clock()
+    if LAST_TIME:
+        elapsed = this_time - LAST_TIME
+        LAST_TIME = this_time
+        print "Time elapsed", elapsed
+        TOTAL_TIME.append(elapsed)
+        return
+    else:
+        LAST_TIME = this_time
+        print "Starting the clock", LAST_TIME
+
+def print_total_time():
+    global TOTAL_TIME
+    print sum(TOTAL_TIME)
 
 def main():
     #from argv use img. L is black and white mode.
-    print mode
+    print_time()
+
     im = Image.open(img).convert("L")
     im_x, im_y = im.size
 
@@ -317,16 +368,29 @@ def main():
     if new_image_x / 1.5 > new_image_y:
         input_imgs = []
         input_imgs = split_images(new_image, "wide")
-        compare_size = im_x
+        compare_size = im_y
     elif new_image_y / 1.5 > new_image_x:
         input_imgs = []
         input_imgs = split_images(new_image, "tall")
-        compare_size = im_y
+        compare_size = im_x
 
-    paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
+    if mode == "hiragana":
+        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
+    elif mode == "katakana":
+        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
+    elif mode == "kanji":
+        # paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
+        paths = [ "../templates/kanji/mincho/", "../templates/kanji/gothic/"]
+    elif mode =="smkanji":
+        paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
+    else:
+        print "Please specify hiragana, katakana, kanji, or smkanji."
 
-    # search_db(input_imgs, compare_size)
-    search_local(input_imgs, paths)
+    compare_size = 81
+    search_db(input_imgs, compare_size)
+    # search_local(input_imgs, paths)
+
+    print_total_time()
 
 if __name__ == "__main__":
     main()

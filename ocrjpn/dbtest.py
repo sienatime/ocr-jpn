@@ -41,6 +41,19 @@ def move_files():
 
     conn.commit()
 
+def add_new_rows():
+    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    cur = conn.cursor()
+
+    new_codes=[21754,
+    26999,
+    27584,
+    36034,
+    37678]
+
+    for new_code in new_codes:
+        cur.execute("INSERT INTO characters SET img_path = %s WHERE code = %s AND font = %s;")
+    conn.commit()
 
 def update_paths():
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
