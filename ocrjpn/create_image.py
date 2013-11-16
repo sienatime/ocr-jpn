@@ -2,17 +2,23 @@ from PIL import Image
 import re
 import cStringIO
 
-imgdata = (open("imgdata.txt").read())
+def img_from_string(imgdata):
+    imgstr = re.search(r'base64,(.*)', imgdata).group(1)
 
-imgstr = re.search(r'base64,(.*)', imgdata).group(1)
+    output = open('output.jpeg', 'wb')
 
-output = open('output.jpeg', 'wb')
+    output.write(imgstr.decode('base64'))
 
-output.write(imgstr.decode('base64'))
+    output.close()
 
-output.close()
+    tempimg = cStringIO.StringIO(imgstr.decode('base64'))
 
-tempimg = cStringIO.StringIO(imgstr.decode('base64'))
+    im = Image.open(tempimg)
+    im.show()
 
-im = Image.open(tempimg)
-im.show()
+def main():
+    imgdata = (open("imgdata.txt").read())
+    img_from_string(imgdata)
+
+if __name__ == "__main__":
+    main()

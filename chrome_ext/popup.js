@@ -6,7 +6,7 @@ console.log("popup.js")
 
 
 
-chrome.tabs.captureVisibleTab(null, null, function(dataUrl) {
+chrome.tabs.captureVisibleTab(null, {format: "png"}, function(dataUrl) {
 
             // screenshot = dataUrl;
             console.log(dataUrl)
@@ -15,5 +15,15 @@ chrome.tabs.captureVisibleTab(null, null, function(dataUrl) {
             //                          'action': 'createCanvas',
             //                          'data'  : {'dataUrl' : dataUrl}
             //                          });
+
+            $.ajax({
+              type: "POST",
+              url: "http://127.0.0.1:5000/makeimage",
+              data: { dataUrl : dataUrl }
+            })
+              .done(function( msg ) {
+                alert( "Data Saved: " + msg );
+              });
+
         });
 
