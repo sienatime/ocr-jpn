@@ -8,7 +8,8 @@ app.secret_key = "shhhhthisisasecret"
 @app.route("/makeimage", methods=['POST'])
 def make_image():
     img_data = request.form.get("dataUrl")
-    create_image.img_from_string(img_data)
+    coords = [request.form.get("x1"), request.form.get("y1"), request.form.get("x2"), request.form.get("y2")]
+    create_image.img_from_string(img_data, coords)
     return "okay"
 
 if __name__ == "__main__":
