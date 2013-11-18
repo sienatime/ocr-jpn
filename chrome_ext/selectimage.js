@@ -41,6 +41,9 @@ chrome.runtime.onMessage.addListener(
                     info = $('<div id="OCRJPNkanjiinfo"></div>');
                     $('body').append(info)
                 }
+
+                loader = chrome.extension.getURL("images/loader.gif")
+                $('#OCRJPNkanjiinfo').html('<img src=' + loader + '>');
             });
 
             flag = true;

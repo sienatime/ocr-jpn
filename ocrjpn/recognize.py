@@ -248,7 +248,7 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
 
     char_type = 'kanji'
 
-    print white_lower
+    print "white lower", white_lower
 
     if verbose:
         print "test image islands", im_white
@@ -337,6 +337,11 @@ def search_db(input_imgs):
             island_range += 1
             final_score = sorted_scores[0][1]
     
+        debug_vals = sorted_scores[:3]
+
+        for row in debug_vals:
+            print unichr(row[0]), row[1], row[2]
+
         return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
         print_time()
     

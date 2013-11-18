@@ -23,6 +23,6 @@
     }
   ],
   "web_accessible_resources":[
-  "jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png"
+  "jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png", "images/loader.gif"
   ]
 }
