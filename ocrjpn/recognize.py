@@ -241,10 +241,12 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    if mode == "smkanji":
-        char_type = "kanji"
-    else:
-        char_type = mode
+    # if mode == "smkanji":
+    #     char_type = "kanji"
+    # else:
+    #     char_type = mode
+
+    char_type = 'kanji'
 
     print white_lower
 
@@ -253,16 +255,18 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
     # im.show()
 
     if char_type != 'kanji':
-        # if it's the kana, just search through those by themselves, it's fast enough.
+        # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
         cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s;", (char_type, tmp_size))
     else:
         island_mode = True
         if island_mode:
             if island_range == 0 or not white_lower:
-                cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
+                #experimenting with just using the gothic font.
+                cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
             else:
+                #experimenting with just using the gothic font.
                 print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
-                cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
+                cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
 
         else:
             cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites is not null;", (char_type, tmp_size))
@@ -301,18 +305,16 @@ def search_local(input_imgs, paths):
         print_time()
         print"***********WINNER***********", unichr(int(sorted_scores[0][0].split(".")[0])), sorted_scores[0][1], sorted_scores[0][2]
 
-def search_db(input_imgs, compare_size):
+def search_db(input_imgs):
     print "SEARCHING DATABASE"
 
     valid_white_vals = set([25,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0])
 
+    return_vals = []
     for image in input_imgs:
         im_black, im_white = find_islands(image)
 
-        if compare_size < AVG_BIG_TEMPLATE_HEIGHT or mode == 'smkanji':
-            tmp_size = 'small'
-        else:
-            tmp_size = 'big'
+        tmp_size = 'big'
 
         final_score = 1
         island_range = 0
@@ -335,8 +337,10 @@ def search_db(input_imgs, compare_size):
             island_range += 1
             final_score = sorted_scores[0][1]
     
+        return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
         print_time()
-        print "***********WINNER***********", parse_score(sorted_scores[0]), sorted_scores[0][1], sorted_scores[0][2]
+    
+    return return_vals
 
 def print_time():
     global LAST_TIME
@@ -354,13 +358,12 @@ def print_time():
 
 def print_total_time():
     global TOTAL_TIME
-    print sum(TOTAL_TIME)
+    print "\nTotal time:", sum(TOTAL_TIME)
 
-def main():
-    #from argv use img. L is black and white mode.
-    print_time()
+def ocr_image(inp):
 
-    im = Image.open(img).convert("L")
+    im = inp.convert("L")
+
     im_x, im_y = im.size
 
     new_image = process_image(im)
@@ -372,28 +375,37 @@ def main():
     if new_image_x / 1.5 > new_image_y:
         input_imgs = []
         input_imgs = split_images(new_image, "wide")
-        compare_size = im_y
     elif new_image_y / 1.5 > new_image_x:
         input_imgs = []
         input_imgs = split_images(new_image, "tall")
-        compare_size = im_x
 
-    if mode == "hiragana":
-        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
-    elif mode == "katakana":
-        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
-    elif mode == "kanji":
-        # paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
-        paths = [ "../templates/kanji/mincho/", "../templates/kanji/gothic/"]
-    elif mode =="smkanji":
-        paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
-    else:
-        print "Please specify hiragana, katakana, kanji, or smkanji."
+    return search_db(input_imgs)
 
-    compare_size = 81
-    search_db(input_imgs, compare_size)
+def main():
+    #from argv use img. L is black and white mode.
+    print_time()
+    im = Image.open(img)
+
+    # if mode == "hiragana":
+    #     paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
+    # elif mode == "katakana":
+    #     paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
+    # elif mode == "kanji":
+    #     # paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
+    #     paths = [ "../templates/kanji/mincho/", "../templates/kanji/gothic/"]
+    # elif mode =="smkanji":
+    #     paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
+    # else:
+    #     print "Please specify hiragana, katakana, kanji, or smkanji."
+
     # search_local(input_imgs, paths)
 
+    results = ocr_image(im)
+
+    print "**********"
+    for result in results:
+        print result[0][0], # this is the top score
+    
     print_total_time()
 
 if __name__ == "__main__":

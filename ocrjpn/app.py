@@ -9,8 +9,18 @@ app.secret_key = "shhhhthisisasecret"
 def make_image():
     img_data = request.form.get("dataUrl")
     coords = [request.form.get("x1"), request.form.get("y1"), request.form.get("x2"), request.form.get("y2")]
-    create_image.img_from_string(img_data, coords)
-    return "okay"
+    results = create_image.img_from_string(img_data, coords)
+    print results
+
+    final = ""
+    for candidates in results:
+        final += candidates[0]
+        
+    return final
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(debug = True)

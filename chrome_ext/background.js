@@ -14,7 +14,12 @@ chrome.runtime.onMessage.addListener(
           data: { dataUrl : dataUrl, x1:request.x1, y1:request.y1, x2:request.x2, y2:request.y2 }
         })
           .done(function( msg ) {
-            alert( "Data Saved: " + msg );
+                chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                  chrome.tabs.sendMessage(tabs[0].id, {greeting: "displayResults", results: msg}, function(response) {
+                      //this will only get run if you try to click the button before the page is done loading.
+                      console.log("response")
+                  });
+              });
           });
 
     });

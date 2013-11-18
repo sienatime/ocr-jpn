@@ -1,31 +1,62 @@
 console.log("selectimage.js is a content script")
 
+windowOpen = false;
+
+chrome.runtime.sendMessage({greeting: "ready"}, function(response) {
+  console.log(response.farewell);
+});
+
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log("i have noooooooooo idea")
     console.log(request.greeting)
     if (request.greeting == "hello"){
-        d = $('<div id="dialog"><p><button id="ocrThis">OCR-JPN</button></p><div id="ocrwindow"></div></div>')
-        $('body').append(d)
-        $('#dialog').dialog();
 
-        $('#ocrThis').click(function(){
-            var x1 = $('#ocrwindow').offset().left
-            var y1 = $('#ocrwindow').offset().top
-            var x2 = $('#ocrwindow').offset().left + $('#ocrwindow').width()
-            var y2 = $('#dialog').offset().top + $('#dialog').height()
+        var flag = false;
+
+        if ($('.OCRJPN').css("display") == "none" ){
+            $('#OCRJPNdialog').remove()
+            $('.OCRJPN').remove()
+        }
+
+        if( $('.OCRJPN').length == 0 ){
+
+            d = $('<div id="OCRJPNdialog" title="OCR-JPN"><div id="OCRJPNtext"><button id="OCRJPNocrThis">GO</button></div><div id="OCRJPNocrwindow"></div></div>');
+            if (!flag){
+                $('body').append(d);
+            }
             
-            chrome.runtime.sendMessage( {greeting: "capture", x1:x1, y1:y1, x2:x2, y2:y2}, function(response) {
-                console.log(response)
+            $('#OCRJPNdialog').dialog();
+            $('#OCRJPNocrThis').click(function(){
+                var x1 = $('#OCRJPNocrwindow').offset().left
+                var y1 = $('#OCRJPNocrwindow').offset().top - $('body').scrollTop()
+                var x2 = $('#OCRJPNocrwindow').offset().left + $('#OCRJPNocrwindow').width()
+                var y2 = $('#OCRJPNdialog').offset().top + $('#OCRJPNdialog').height() + parseInt($('#OCRJPNdialog').css('border-bottom').charAt(0) - $('body').scrollTop())
+                
+                chrome.runtime.sendMessage( {greeting: "capture", x1:x1, y1:y1, x2:x2, y2:y2}, function(response) {
+                    $('body').append(response);
+                });
+
+                if ( $('#OCRJPNkanjiinfo').length  == 0 ){
+                    info = $('<div id="OCRJPNkanjiinfo"></div>');
+                    $('body').append(info)
+                }
             });
-        });
-      sendResponse({farewell: "goodbye"});
+
+            flag = true;
+        }
+    }else if(request.greeting == "displayResults"){
+        console.log("display results");
+        
+        $('#OCRJPNkanjiinfo').text(request.results)
     }
+        sendResponse({farewell: "goodbye"});
+    
   });
 
 function printCoords(){
-    console.log($('#ocrwindow').offset().left)
-    console.log($('#ocrwindow').offset().top)
-    console.log($('#ocrwindow').offset().left + $('#ocrwindow').width())
-    console.log($('#dialog').offset().top + $('#dialog').height())
+    console.log($('#OCRJPNocrwindow').offset().left)
+    console.log($('#OCRJPNocrwindow').offset().top - $('body').scrollTop() - $('body').css('margin-top'))
+    console.log($('#OCRJPNocrwindow').offset().left + $('#OCRJPNocrwindow').width())
+    console.log($('#OCRJPNdialog').offset().top + $('#OCRJPNdialog').height() + parseInt($('#OCRJPNdialog').css('border-bottom').charAt(0)) - $('body').scrollTop())
 }

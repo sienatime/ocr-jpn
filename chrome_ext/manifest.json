@@ -18,7 +18,8 @@
     {
       "matches" : ["<all_urls>"],
       "css": ["jquery-ui-1.10.3.custom/css/no-theme/jquery-ui-1.10.3.custom.css", "jquery-ui-1.10.3.custom/css/no-theme/mycss.css"],
-      "js": ["jquery-ui-1.10.3.custom/js/jquery-1.9.1.js", "jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js", "selectimage.js"]
+      "js": ["jquery-ui-1.10.3.custom/js/jquery-1.9.1.js", "jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js", "selectimage.js"],
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources":[
