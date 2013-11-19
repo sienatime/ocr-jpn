@@ -14,6 +14,7 @@ THRESHOLD_OFFSET = 20
 verbose = True
 LAST_TIME = None
 TOTAL_TIME = []
+mode = None
 
 if len(argv) == 3:
     script, img, mode = argv
@@ -243,12 +244,13 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    if mode == "smkanji":
-        char_type = "kanji"
-    elif mode:
-        char_type = mode
-    else:
-        char_type = 'kanji'
+    char_type = 'kanji'
+
+    if mode:
+        if mode == "smkanji":
+            char_type = "kanji"
+        else:
+            char_type = mode
 
     print "white lower", white_lower
 
@@ -260,7 +262,7 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
         # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
         cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s;", (char_type, tmp_size))
     else:
-        island_mode = False
+        island_mode = True
         if island_mode:
             if island_range == 0 or not white_lower:
                 #experimenting with just using the gothic font. actually mincho doesn't have the small whites column so... yeah...........
@@ -268,6 +270,7 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
                 cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
             else:
                 print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
+                
                 cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
 
         else:
@@ -286,10 +289,6 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
         code, img_path, font = row
         template = Image.open(img_path).convert("L")
         the_score = compare_to_template(im, template)
-
-        if code == 23455:
-            print u"found 実 but it wasn't high enough", the_score
-
         scores.append( (code, the_score, font) )
 
     return scores
@@ -312,6 +311,7 @@ def search_local(input_imgs, paths):
         print"***********WINNER***********", unichr(int(sorted_scores[0][0].split(".")[0])), sorted_scores[0][1], sorted_scores[0][2]
 
 def search_db(input_imgs):
+    print_time()
     print "SEARCHING DATABASE"
 
     valid_white_vals = set([25,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0])
@@ -353,6 +353,7 @@ def search_db(input_imgs):
         return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
         print_time()
     
+    print_total_time()
     return return_vals
 
 def print_time():

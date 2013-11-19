@@ -24,6 +24,26 @@ def run_thru_templates(im):
 
     return scores
 
+def compare_kanji():
+    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    cur = conn.cursor()
+
+    cur.execute("SELECT code from characters where sm_whites is null and jouyou = False and img_size = 'big' and font = 'gothic';")
+
+    rows = cur.fetchall()
+
+    images = os.listdir("../templates/kanji/small gothic dups")
+
+    sorted_codes = sorted(rows, key=lambda row: row[0]) 
+
+    print len(images), len(sorted_codes)
+    assert len(images) == len(sorted_codes)
+
+    for i in range(len(sorted_codes)):
+        code = str(sorted_codes[i][0]) + ".bmp"
+        if code != images[i]:
+            print code, images[i]
+
 def move_files():
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()

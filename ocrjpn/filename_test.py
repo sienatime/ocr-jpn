@@ -41,8 +41,8 @@ def codepts_from_chars():
     # print "moved %d files" % counter
 
 def compare_folders():
-    path1 = "../templates/kanji/small gothic/"
-    path2 = "../templates/kanji/gothic/"
+    path2 = "../templates/kanji/small gothic dups/"
+    path1 = "../templates/kanji//"
 
     list_path1 = os.listdir(path1)
     list_path2 = os.listdir(path2)
@@ -50,12 +50,12 @@ def compare_folders():
     print "items in %s that are not in %s" % (path1, path2)
     for item in list_path1:
         if item not in list_path2:
-            print item
+            print unichr(int(item.split(".")[0]))
 
 def move_matched_files():
-    path1 = "../templates/kanji/gothic/"
-    path2 = "../templates/kanji/mincho extra/"
-    path3 = "../templates/kanji/gothic extra/"
+    path1 = "../templates/kanji/small gothic extra/"
+    path2 = "../templates/kanji/gothic extra/"
+    path3 = "../templates/kanji/small gothic dups/"
 
     list_path1 = os.listdir(path1)
 
