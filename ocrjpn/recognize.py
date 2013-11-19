@@ -122,6 +122,8 @@ def process_image(im):
     out = resize_image(im, avg)
     thrs, black_pixels = threshold_image(out, avg)
 
+    print "AVERAGE", avg
+
     return crop_image(thrs, black_pixels)
 
 def compare_to_template(im, template):
@@ -241,12 +243,12 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    # if mode == "smkanji":
-    #     char_type = "kanji"
-    # else:
-    #     char_type = mode
-
-    char_type = 'kanji'
+    if mode == "smkanji":
+        char_type = "kanji"
+    elif mode:
+        char_type = mode
+    else:
+        char_type = 'kanji'
 
     print "white lower", white_lower
 
@@ -258,13 +260,13 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
         # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
         cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s;", (char_type, tmp_size))
     else:
-        island_mode = True
+        island_mode = False
         if island_mode:
             if island_range == 0 or not white_lower:
-                #experimenting with just using the gothic font.
+                #experimenting with just using the gothic font. actually mincho doesn't have the small whites column so... yeah...........
+                print "white islands", im_white
                 cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
             else:
-                #experimenting with just using the gothic font.
                 print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
                 cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
 
@@ -284,6 +286,10 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
         code, img_path, font = row
         template = Image.open(img_path).convert("L")
         the_score = compare_to_template(im, template)
+
+        if code == 23455:
+            print u"found 実 but it wasn't high enough", the_score
+
         scores.append( (code, the_score, font) )
 
     return scores
@@ -325,14 +331,16 @@ def search_db(input_imgs):
             print "not a valid number of white islands"
             white_upper -= 1
 
-        while final_score > 0.295:
+        while final_score > 0.3:
             print "searching..."
             white_lower = im_white-island_range
             if white_lower <= 1:
-                white_lower = None
+                print "GIVING UP"
+                break
 
             scores = []
             scores = scores + run_thru_templates_db(image, island_range, tmp_size, white_lower, white_upper)
+
             sorted_scores = sorted(scores, key=lambda score: score[1]) 
             island_range += 1
             final_score = sorted_scores[0][1]
@@ -391,17 +399,17 @@ def main():
     print_time()
     im = Image.open(img)
 
-    # if mode == "hiragana":
-    #     paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
-    # elif mode == "katakana":
-    #     paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
-    # elif mode == "kanji":
-    #     # paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
-    #     paths = [ "../templates/kanji/mincho/", "../templates/kanji/gothic/"]
-    # elif mode =="smkanji":
-    #     paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
-    # else:
-    #     print "Please specify hiragana, katakana, kanji, or smkanji."
+    if mode == "hiragana":
+        paths = ["../templates/hiragana/gothic/", "../templates/hiragana/mincho/"]
+    elif mode == "katakana":
+        paths = ["../templates/katakana/gothic/", "../templates/katakana/mincho/"]
+    elif mode == "kanji":
+        # paths = [ "../templates/kanji/mincho/", "../templates/kanji/mincho extra/", "../templates/kanji/gothic/", "../templates/kanji/gothic extra/"]
+        paths = [ "../templates/kanji/mincho/", "../templates/kanji/gothic/"]
+    elif mode =="smkanji":
+        paths = [ "../templates/kanji/small mincho/", "../templates/kanji/small gothic/"]
+    else:
+        print "Please specify hiragana, katakana, kanji, or smkanji."
 
     # search_local(input_imgs, paths)
 

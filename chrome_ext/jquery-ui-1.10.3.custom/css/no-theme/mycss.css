@@ -32,7 +32,7 @@
     text-align: center;
 }
 
-.OCRJPN.ui-dialog #OCRJPNtext{
+.OCRJPN.ui-dialog #OCRJPNdialogtext{
     background: lightgray;
     margin: 0;
     text-align: center;
@@ -85,11 +85,12 @@
 
 #OCRJPNkanjiinfo{
     position: absolute;
-    right:20px;
-    top:20px;
+    top: 20px;
+    left: 20px;
     background: #4e4775;
     color: white;
     font-family: Arial;
     padding: 20px;
     border: 1px white solid;
+    z-index: 20000000;
 }
