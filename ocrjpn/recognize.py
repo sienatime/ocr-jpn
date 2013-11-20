@@ -7,9 +7,9 @@ import psycopg2
 from os import listdir
 import pdb
 from time import clock
+import split_images
 
 AVG_BIG_TEMPLATE_HEIGHT = 80
-AVG_SMALL_TEMPLATE_HEIGHT = 22
 THRESHOLD_OFFSET = 20
 verbose = True
 LAST_TIME = None
@@ -28,8 +28,11 @@ def open_threshold_save(im_name, save_name):
 def save_image(im, filename, filetype):
     im.save(filename, filetype)
 
-def sample_corners(im, im_avg):
+def sample_corners(im):
+    global THRESHOLD_OFFSET
     #take a 9x9 sample of the corners. with any luck, these will be mostly representative of the background color.
+    pixel_data = list(im.getdata())
+    im_avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
     im_x, im_y = im.size
     crop_size = 3
 
@@ -40,7 +43,6 @@ def sample_corners(im, im_avg):
 
     corner_data = list(corner1.getdata()) + list(corner2.getdata()) + list(corner3.getdata()) + list(corner4.getdata())
 
-    global THRESHOLD_OFFSET
     corner_avg = sum(corner_data)/len(corner_data) - THRESHOLD_OFFSET
 
     #if the average value of the corners is less than the average value of the image, it means the whole image is light so perhaps we should invert.
@@ -50,16 +52,11 @@ def sample_corners(im, im_avg):
         return False
 
 def resize_image(im, avg):
-    # if sample_corners(im, avg):
-    #     print "inverting image"
-    #     im = ImageChops.invert(im)
-
     im_x, im_y = im.size
     global AVG_BIG_TEMPLATE_HEIGHT
     global AVG_SMALL_TEMPLATE_HEIGHT
 
     big_ratio = float(AVG_BIG_TEMPLATE_HEIGHT)/im_y
-    small_ratio = float(AVG_SMALL_TEMPLATE_HEIGHT)/im_y
 
     if big_ratio > 1:
         out = im.resize((int(im_x*big_ratio), int(im_y*big_ratio)), Image.ANTIALIAS)
@@ -146,82 +143,6 @@ def compare_to_template(im, template):
 
     return total
 
-def find_split_ranges(l):
-    split_ranges = []
-    slice_start = 0
-
-    length = len(l)
-
-    for i in range(length):
-        # if i == 11:
-        #     code.interact(local=locals())
-        if i == length-1 or l[i] + 1 != l[i+1]:
-            split_ranges.append( l[slice_start:i+1] )
-            slice_start = i+1
-
-    return split_ranges
-
-def find_white_cols(im):
-    x, y = im.size
-    white_cols = []
-    for i in range(x):
-        if im.getpixel((i, 0)) == 255:
-            for j in range(1, y):
-                if im.getpixel(( i, j )) == 0:
-                    break
-            if j == y - 1:
-                white_cols.append(i)
-    return white_cols
-
-def find_white_rows(im):
-    x, y = im.size
-    white_rows = []
-    for i in range(y):
-        if im.getpixel((0, i)) == 255:
-            for j in range(1, x):
-                if im.getpixel(( j, i )) == 0:
-                    break
-            if j == x - 1:
-                white_rows.append(i)
-    return white_rows
-
-def split_images(im, direction):
-    im_x, im_y = im.size
-    
-    final_images = []
-    boxes = []
-    start_x = 0
-    start_y = 0
-    
-    if direction == "wide":
-        white_cols = find_white_cols(im)
-        split_ranges = find_split_ranges(white_cols)
-        end = im_y
-
-        for rng in split_ranges:
-            boxes.append( (start_x, start_y, rng[0], end) )
-            start_x = rng[-1] + 1
-
-        boxes.append( (split_ranges[-1][-1], start_y, im_x, end) )
-
-    elif direction == "tall":
-        white_rows = find_white_rows(im)
-        split_ranges = find_split_ranges(white_rows)
-        end = im_x
-
-        for rng in split_ranges:
-            boxes.append( (start_x, start_y, end, rng[0]) )
-            start_y = rng[-1] + 1
-
-        boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
-
-    for box in boxes:
-        cropped = im.crop(box)
-        new_im = process_image(cropped)
-        final_images.append(new_im)
-
-    return final_images
-
 def run_thru_templates_local(path, im):
     templates = listdir(path)
     scores = []
@@ -239,8 +160,8 @@ def run_thru_templates_local(path, im):
         
     return scores
 
-def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
-    print "Looking through %s templates" % tmp_size
+def run_thru_templates_db(im, island_range, white_lower, im_white):
+    print "Looking through templates"
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
@@ -260,21 +181,20 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
 
     if char_type != 'kanji':
         # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
-        cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s;", (char_type, tmp_size))
+        cur.execute("SELECT code, img_path from characters where char_type = %s and img_size = %s;", (char_type))
     else:
         island_mode = True
         if island_mode:
-            if island_range == 0 or not white_lower:
+            if island_range == 0:
                 #experimenting with just using the gothic font. actually mincho doesn't have the small whites column so... yeah...........
                 print "white islands", im_white
-                cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and sm_whites = %s;", (char_type, tmp_size, im_white))
+                cur.execute("SELECT code, img_path from characters where font = 'gothic' and char_type = %s and img_size = 'big' and sm_whites = %s;", (char_type, im_white))
             else:
-                print "searching white islands", white_lower, im_white+island_range, char_type, tmp_size
-                
-                cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and char_type = %s and img_size = %s and (sm_whites = %s or sm_whites = %s);", (char_type, tmp_size, white_lower, im_white+island_range))
+                print "searching white islands", white_lower, im_white+island_range, char_type
+                cur.execute("SELECT code, img_path from characters where font = 'gothic' and char_type = %s and img_size = 'big' and (sm_whites = %s or sm_whites = %s);", (char_type, white_lower, im_white+island_range))
 
         else:
-            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = %s and sm_whites is not null;", (char_type, tmp_size))
+            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = 'big' and sm_whites is not null;", (char_type))
     
     matches = cur.fetchall()
 
@@ -286,17 +206,27 @@ def run_thru_templates_db(im, island_range, tmp_size, white_lower, im_white):
 
     scores = []
     for row in matches:
+        code, img_path = row
+        template = Image.open(img_path).convert("L")
+        the_score = compare_to_template(im, template)
+        scores.append( (code, the_score) )
+
+    return scores
+
+def run_thru_kana(im):
+    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    cur = conn.cursor()
+    cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and (char_type = 'hiragana' or char_type = 'katakana');")
+    matches = cur.fetchall()
+
+    scores = []
+    for row in matches:
         code, img_path, font = row
         template = Image.open(img_path).convert("L")
         the_score = compare_to_template(im, template)
         scores.append( (code, the_score, font) )
 
     return scores
-
-def parse_score(score):
-    # score is a tuple constructed like (filename.bmp, score)
-    # i would really like to wrap this in a try/catch in case unichr() freaks out
-    return unichr(score[0])
 
 def search_local(input_imgs, paths):
     print "SEARCHING LOCAL TEMPLATES"
@@ -318,40 +248,54 @@ def search_db(input_imgs):
 
     return_vals = []
     for image in input_imgs:
+        image.show()
         im_black, im_white = find_islands(image)
 
-        tmp_size = 'big'
+        kana_scores = run_thru_kana(image)
+        sorted_kana_scores = sorted(kana_scores, key=lambda score: score[1]) 
+        print "MOST SIMILAR KANA", unichr(sorted_kana_scores[0][0]), sorted_kana_scores[0][1], sorted_kana_scores[0][2]
+        high_kana_score = sorted_kana_scores[0][1]
+        
+        if high_kana_score < 0.25:
+            print "kana score was good enough"
+            return_vals.append([unichr(sorted_kana_scores[0][0]), unichr(sorted_kana_scores[1][0]), unichr(sorted_kana_scores[2][0])])
+        else:
+            final_score = 1
+            island_range = 0
+            white_upper = im_white
 
-        final_score = 1
-        island_range = 0
-        white_upper = im_white
+            while white_upper not in valid_white_vals:
+                #pick another one
+                print "not a valid number of white islands"
+                white_upper -= 1
 
-        while white_upper not in valid_white_vals:
-            #pick another one
-            print "not a valid number of white islands"
-            white_upper -= 1
+            sorted_scores = []
 
-        while final_score > 0.3:
-            print "searching..."
-            white_lower = im_white-island_range
-            if white_lower <= 1:
-                print "GIVING UP"
-                break
+            while final_score > 0.3:
+                print "searching..."
+                white_lower = im_white-island_range
+                if white_lower <= 1:
+                    print "GIVING UP"
+                    break
 
-            scores = []
-            scores = scores + run_thru_templates_db(image, island_range, tmp_size, white_lower, white_upper)
+                scores = []
+                scores = scores + run_thru_templates_db(image, island_range, white_lower, white_upper)
 
-            sorted_scores = sorted(scores, key=lambda score: score[1]) 
-            island_range += 1
-            final_score = sorted_scores[0][1]
-    
-        debug_vals = sorted_scores[:3]
+                sorted_scores = sorted(scores, key=lambda score: score[1]) 
+                island_range += 1
+                final_score = sorted_scores[0][1]
+        
+            debug_vals = sorted_scores[:3]
 
-        for row in debug_vals:
-            print unichr(row[0]), row[1], row[2]
+            for row in debug_vals:
+                print unichr(row[0]), row[1]
 
-        return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
-        print_time()
+            if len(sorted_scores) == 0:
+                #probably means it picked up a little dirt or something.....
+                image.show()
+
+            return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
+            print_time()
     
     print_total_time()
     return return_vals
@@ -372,6 +316,7 @@ def print_time():
 
 def print_total_time():
     global TOTAL_TIME
+    print TOTAL_TIME
     print "\nTotal time:", sum(TOTAL_TIME)
 
 def ocr_image(inp):
@@ -379,6 +324,10 @@ def ocr_image(inp):
     im = inp.convert("L")
 
     im_x, im_y = im.size
+
+    if sample_corners(im):
+        print "inverting image"
+        im = ImageChops.invert(im)
 
     new_image = process_image(im)
 
@@ -388,10 +337,17 @@ def ocr_image(inp):
 
     if new_image_x / 1.5 > new_image_y:
         input_imgs = []
-        input_imgs = split_images(new_image, "wide")
+        input_imgs = split_images.split_images(new_image, "wide")
     elif new_image_y / 1.5 > new_image_x:
         input_imgs = []
-        input_imgs = split_images(new_image, "tall")
+        input_imgs = split_images.split_images(new_image, "tall")
+
+    for i in reversed(range(len(input_imgs))):
+        split_x, split_y = input_imgs[i].size
+
+        if im_x/split_x > 2 or im_y/split_y > 2:
+            print "deleted small image!"
+            del input_imgs[i]
 
     return search_db(input_imgs)
 
