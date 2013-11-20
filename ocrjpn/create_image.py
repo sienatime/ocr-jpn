@@ -18,7 +18,7 @@ def img_from_string(imgdata, coords):
     im = Image.open(tempimg)
     # im.show()
     cropped = im.crop(box)
-    cropped.show()
+    # cropped.show()
 
     return recognize.ocr_image(cropped)
 

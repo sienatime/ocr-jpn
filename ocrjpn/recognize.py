@@ -228,6 +228,49 @@ def run_thru_kana(im):
 
     return scores
 
+def search_similar_chars(im, candidates):
+    print "searching similar characters"
+    #candidates is a list of scores, which are a tuple like (code, score)
+    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+    cur = conn.cursor()
+
+    highest = candidates[0][0]
+    print "HIGHEST", highest
+
+    cur.execute("SELECT similar_code, similar_code_path from similarities where code = %s;", (highest,))
+
+    matches = cur.fetchall()
+    
+    if matches:
+        sim_scores = []
+        for row in matches:
+            sim_code, sim_img_path = row
+            template = Image.open(sim_img_path).convert("L")
+            the_score = compare_to_template(im, template)
+            sim_scores.append( (sim_code, the_score) )
+
+        sorted_sim_scores = sorted(sim_scores, key=lambda score: score[1]) 
+
+        all_scores = candidates + sorted_sim_scores
+        all_scores = sorted(all_scores, key=lambda score: score[1])
+
+        print all_scores
+
+        final_candidates = []
+
+        for i in range(3):
+            final_candidates.append( unichr(all_scores[i][0]) )
+
+        return final_candidates
+    else:
+        # no similar characters, just keep going.
+        final_candidates = []
+
+        for i in range(3):
+            final_candidates.append( unichr(candidates[i][0]) )
+
+        return final_candidates
+
 def search_local(input_imgs, paths):
     print "SEARCHING LOCAL TEMPLATES"
     for image in input_imgs:
@@ -248,7 +291,6 @@ def search_db(input_imgs):
 
     return_vals = []
     for image in input_imgs:
-        image.show()
         im_black, im_white = find_islands(image)
 
         kana_scores = run_thru_kana(image)
@@ -258,7 +300,8 @@ def search_db(input_imgs):
         
         if high_kana_score < 0.25:
             print "kana score was good enough"
-            return_vals.append([unichr(sorted_kana_scores[0][0]), unichr(sorted_kana_scores[1][0]), unichr(sorted_kana_scores[2][0])])
+            adjusted_candidates = search_similar_chars(image, sorted_kana_scores[:3])
+            return_vals.append(adjusted_candidates)
         else:
             final_score = 1
             island_range = 0
@@ -294,9 +337,11 @@ def search_db(input_imgs):
                 #probably means it picked up a little dirt or something.....
                 image.show()
 
-            return_vals.append([unichr(sorted_scores[0][0]), unichr(sorted_scores[1][0]), unichr(sorted_scores[2][0])])
+            adjusted_candidates = search_similar_chars(image, sorted_scores[:3])
+
+            return_vals.append(adjusted_candidates)
             print_time()
-    
+
     print_total_time()
     return return_vals
 

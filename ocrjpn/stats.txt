@@ -1,0 +1,178 @@
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   18.996   18.996 <string>:1(<module>)
+       28    0.000    0.000    0.000    0.000 <string>:8(__new__)
+     3802    0.040    0.000    2.376    0.001 BmpImagePlugin.py:160(_open)
+        1    0.000    0.000    0.000    0.000 BmpImagePlugin.py:171(DibImageFile)
+        1    0.000    0.000    0.001    0.001 BmpImagePlugin.py:27(<module>)
+     3802    0.004    0.000    0.004    0.000 BmpImagePlugin.py:53(_accept)
+        1    0.000    0.000    0.000    0.000 BmpImagePlugin.py:59(BmpImageFile)
+     3802    1.148    0.000    2.296    0.001 BmpImagePlugin.py:64(_bitmap)
+        1    0.001    0.001    0.001    0.001 GifImagePlugin.py:28(<module>)
+        1    0.000    0.000    0.000    0.000 GifImagePlugin.py:53(GifImageFile)
+    44240    0.041    0.000    0.089    0.000 Image.py:1261(putpixel)
+     3806    0.013    0.000    0.087    0.000 Image.py:1287(resize)
+        9    0.000    0.000    0.000    0.000 Image.py:1693(__init__)
+    30590    0.019    0.000    0.026    0.000 Image.py:1710(load)
+     3802    0.035    0.000    3.969    0.001 Image.py:1951(open)
+        5    0.000    0.000    0.000    0.000 Image.py:2109(register_open)
+        3    0.000    0.000    0.000    0.000 Image.py:2124(register_mime)
+        5    0.000    0.000    0.000    0.000 Image.py:2135(register_save)
+       10    0.000    0.000    0.000    0.000 Image.py:2146(register_extension)
+     3802    0.003    0.000    0.006    0.000 Image.py:313(preinit)
+        1    0.000    0.000    0.000    0.000 Image.py:375(_getdecoder)
+    11419    0.023    0.000    0.023    0.000 Image.py:457(__init__)
+     7608    0.025    0.000    0.043    0.000 Image.py:468(_new)
+    11407    0.011    0.000    0.011    0.000 Image.py:512(__getattr__)
+   103693    0.067    0.000    0.088    0.000 Image.py:618(load)
+     3802    0.062    0.000    0.466    0.000 Image.py:654(convert)
+        9    0.000    0.000    0.000    0.000 Image.py:777(crop)
+     7607    0.007    0.000    0.016    0.000 Image.py:892(getdata)
+    71017    0.057    0.000    0.121    0.000 Image.py:962(getpixel)
+        1    0.000    0.000    0.000    0.000 ImageColor.py:20(<module>)
+     3802    0.087    0.000    0.337    0.000 ImageFile.py:125(load)
+     3802    0.009    0.000    0.009    0.000 ImageFile.py:245(load_prepare)
+     3802    0.001    0.000    0.001    0.000 ImageFile.py:254(load_end)
+        1    0.000    0.000    0.000    0.000 ImageFile.py:267(StubImageFile)
+        1    0.000    0.000    0.000    0.000 ImageFile.py:297(Parser)
+        1    0.000    0.000    0.000    0.000 ImageFile.py:30(<module>)
+     3802    0.003    0.000    0.005    0.000 ImageFile.py:480(_safe_read)
+        1    0.000    0.000    0.000    0.000 ImageFile.py:62(_tilesort)
+        1    0.000    0.000    0.000    0.000 ImageFile.py:70(ImageFile)
+     3802    0.017    0.000    2.408    0.001 ImageFile.py:73(__init__)
+        1    0.000    0.000    0.000    0.000 ImagePalette.py:19(<module>)
+        1    0.000    0.000    0.000    0.000 ImagePalette.py:25(ImagePalette)
+        1    0.000    0.000    0.000    0.000 JpegImagePlugin.py:267(JpegImageFile)
+        1    0.000    0.000    0.000    0.000 JpegImagePlugin.py:35(<module>)
+        1    0.000    0.000    0.000    0.000 JpegPresets.py:67(<module>)
+        1    0.000    0.000    0.000    0.000 PngImagePlugin.py:154(PngInfo)
+        1    0.000    0.000    0.000    0.000 PngImagePlugin.py:179(PngStream)
+        1    0.000    0.000    0.001    0.001 PngImagePlugin.py:34(<module>)
+        1    0.000    0.000    0.000    0.000 PngImagePlugin.py:341(PngImageFile)
+        1    0.000    0.000    0.000    0.000 PngImagePlugin.py:484(_idat)
+        1    0.000    0.000    0.000    0.000 PngImagePlugin.py:78(ChunkStream)
+        1    0.000    0.000    0.000    0.000 PpmImagePlugin.py:18(<module>)
+        1    0.000    0.000    0.000    0.000 PpmImagePlugin.py:56(PpmImageFile)
+       12    0.000    0.000    0.271    0.023 __init__.py:102(connect)
+        1    0.000    0.000    0.000    0.000 __init__.py:49(normalize_encoding)
+        1    0.000    0.000    0.000    0.000 __init__.py:71(search_function)
+   102654    0.030    0.000    0.037    0.000 _binary.py:15(i8)
+   973056    0.337    0.000    0.527    0.000 _binary.py:18(o8)
+     3802    0.004    0.000    0.007    0.000 _binary.py:28(i16le)
+    22812    0.040    0.000    0.073    0.000 _binary.py:31(i32le)
+     7604    0.005    0.000    0.012    0.000 _util.py:6(isPath)
+        1    0.000    0.000    0.000    0.000 ascii.py:13(Codec)
+        1    0.000    0.000    0.000    0.000 ascii.py:20(IncrementalEncoder)
+        1    0.000    0.000    0.000    0.000 ascii.py:24(IncrementalDecoder)
+        1    0.000    0.000    0.000    0.000 ascii.py:28(StreamWriter)
+        1    0.000    0.000    0.000    0.000 ascii.py:31(StreamReader)
+        1    0.000    0.000    0.000    0.000 ascii.py:34(StreamConverter)
+        1    0.000    0.000    0.000    0.000 ascii.py:41(getregentry)
+        1    0.000    0.000    0.000    0.000 ascii.py:8(<module>)
+        1    0.000    0.000    0.000    0.000 codecs.py:77(__new__)
+     8448    0.011    0.000    0.014    0.000 islands.py:15(search_equalities)
+     4224    0.005    0.000    0.020    0.000 islands.py:22(add_to_equalities)
+    23718    0.012    0.000    0.032    0.000 islands.py:3(check_neighbors)
+        4    0.037    0.009    0.110    0.027 islands.py:54(find_islands)
+        1    0.000    0.000    0.000    0.000 locale.py:347(normalize)
+        1    0.000    0.000    0.000    0.000 locale.py:415(_parse_localename)
+        1    0.000    0.000    0.000    0.000 locale.py:461(getdefaultlocale)
+        1    0.000    0.000    0.000    0.000 locale.py:514(getlocale)
+        2    0.000    0.000    0.000    0.000 re.py:188(compile)
+        2    0.000    0.000    0.000    0.000 re.py:226(_compile)
+        5    0.001    0.000    0.223    0.045 recognize.py:117(process_image)
+     3801   11.964    0.003   13.601    0.004 recognize.py:131(compare_to_template)
+        8    0.241    0.030   16.010    2.001 recognize.py:167(run_thru_templates_db)
+        4    0.041    0.010    2.633    0.658 recognize.py:220(run_thru_kana)
+        1    0.005    0.005   18.762   18.762 recognize.py:252(search_db)
+      584    0.000    0.000    0.000    0.000 recognize.py:263(<lambda>)
+     3217    0.001    0.000    0.001    0.000 recognize.py:292(<lambda>)
+        6    0.000    0.000    0.000    0.000 recognize.py:311(print_time)
+        2    0.000    0.000    0.000    0.000 recognize.py:325(print_total_time)
+        1    0.000    0.000   18.992   18.992 recognize.py:330(ocr_image)
+        1    0.000    0.000   18.996   18.996 recognize.py:358(main)
+        5    0.000    0.000    0.001    0.000 recognize.py:53(resize_image)
+        5    0.051    0.010    0.218    0.044 recognize.py:76(threshold_image)
+        5    0.003    0.001    0.003    0.001 recognize.py:92(crop_image)
+        1    0.002    0.002    0.007    0.007 split_images.py:19(find_white_cols)
+        1    0.000    0.000    0.000    0.000 split_images.py:4(find_split_ranges)
+        1    0.000    0.000    0.133    0.133 split_images.py:43(split_images)
+        5    0.000    0.000    0.000    0.000 sre_compile.py:179(_compile_charset)
+        5    0.000    0.000    0.000    0.000 sre_compile.py:208(_optimize_charset)
+      4/2    0.000    0.000    0.000    0.000 sre_compile.py:33(_compile)
+        2    0.000    0.000    0.000    0.000 sre_compile.py:355(_simple)
+        2    0.000    0.000    0.000    0.000 sre_compile.py:362(_compile_info)
+        4    0.000    0.000    0.000    0.000 sre_compile.py:475(isstring)
+        2    0.000    0.000    0.000    0.000 sre_compile.py:481(_code)
+        2    0.000    0.000    0.000    0.000 sre_compile.py:496(compile)
+        8    0.000    0.000    0.000    0.000 sre_parse.py:127(__len__)
+       12    0.000    0.000    0.000    0.000 sre_parse.py:131(__getitem__)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:135(__setitem__)
+        9    0.000    0.000    0.000    0.000 sre_parse.py:139(append)
+      6/4    0.000    0.000    0.000    0.000 sre_parse.py:141(getwidth)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:179(__init__)
+       17    0.000    0.000    0.000    0.000 sre_parse.py:183(__next)
+        4    0.000    0.000    0.000    0.000 sre_parse.py:196(match)
+       15    0.000    0.000    0.000    0.000 sre_parse.py:202(get)
+        4    0.000    0.000    0.000    0.000 sre_parse.py:258(_escape)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:302(_parse_sub)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:380(_parse)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:676(parse)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:68(__init__)
+        4    0.000    0.000    0.000    0.000 sre_parse.py:91(__init__)
+     3801    0.194    0.000    0.194    0.000 {PIL._imaging.map}
+        1    0.000    0.000    0.000    0.000 {PIL._imaging.new}
+        1    0.000    0.000    0.000    0.000 {PIL._imaging.raw_decoder}
+        1    0.000    0.000    0.000    0.000 {__import__}
+        1    0.000    0.000    0.000    0.000 {_locale._getdefaultlocale}
+        1    0.000    0.000    0.000    0.000 {_locale.setlocale}
+        2    0.000    0.000    0.000    0.000 {_sre.compile}
+ 22729284    1.168    0.000    1.168    0.000 {abs}
+       29    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x1E227020}
+   973056    0.191    0.000    0.191    0.000 {chr}
+        1    0.000    0.000    0.000    0.000 {getattr}
+     7604    0.011    0.000    0.013    0.000 {hasattr}
+     7626    0.007    0.000    0.007    0.000 {isinstance}
+27535/27533    0.004    0.000    0.004    0.000 {len}
+   997736    0.092    0.000    0.092    0.000 {method 'append' of 'list' objects}
+     3802    0.042    0.000    0.042    0.000 {method 'convert' of 'ImagingCore' objects}
+     7608    0.003    0.000    0.003    0.000 {method 'copy' of 'dict' objects}
+        9    0.000    0.000    0.000    0.000 {method 'crop' of 'ImagingCore' objects}
+       12    0.000    0.000    0.000    0.000 {method 'cursor' of 'psycopg2._psycopg.connection' objects}
+        1    0.000    0.000    0.000    0.000 {method 'decode' of 'ImagingDecoder' objects}
+        1    0.000    0.000    0.000    0.000 {method 'decode' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method 'encode' of 'unicode' objects}
+       12    0.058    0.005    0.058    0.005 {method 'execute' of 'psycopg2._psycopg.cursor' objects}
+       12    0.000    0.000    0.000    0.000 {method 'extend' of 'list' objects}
+       12    0.001    0.000    0.001    0.000 {method 'fetchall' of 'psycopg2._psycopg.cursor' objects}
+       11    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+    71017    0.008    0.000    0.008    0.000 {method 'getpixel' of 'ImagingCore' objects}
+        2    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+       12    0.000    0.000    0.000    0.000 {method 'iteritems' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+       10    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+   130481    0.029    0.000    0.029    0.000 {method 'pixel_access' of 'ImagingCore' objects}
+    44240    0.014    0.000    0.014    0.000 {method 'putpixel' of 'ImagingCore' objects}
+   988265    0.541    0.000    0.541    0.000 {method 'read' of 'file' objects}
+     3801    0.013    0.000    0.013    0.000 {method 'readimage' of 'ImagingMapper' objects}
+        3    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+     3801    0.047    0.000    0.047    0.000 {method 'resize' of 'ImagingCore' objects}
+     3801    0.003    0.000    0.003    0.000 {method 'seek' of 'ImagingMapper' objects}
+     3803    0.011    0.000    0.011    0.000 {method 'seek' of 'file' objects}
+        1    0.000    0.000    0.000    0.000 {method 'setimage' of 'ImagingDecoder' objects}
+        1    0.000    0.000    0.000    0.000 {method 'sort' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 {method 'split' of 'str' objects}
+        5    0.001    0.000    0.001    0.000 {method 'stretch' of 'ImagingCore' objects}
+        2    0.000    0.000    0.000    0.000 {method 'translate' of 'str' objects}
+       23    0.000    0.000    0.000    0.000 {method 'upper' of 'str' objects}
+        8    0.000    0.000    0.000    0.000 {min}
+     3802    1.434    0.000    1.434    0.000 {open}
+   102657    0.007    0.000    0.007    0.000 {ord}
+       12    0.271    0.023    0.271    0.023 {psycopg2._psycopg._connect}
+    16987    0.160    0.000    0.160    0.000 {range}
+       12    0.003    0.000    0.003    0.000 {sorted}
+     3808    0.222    0.000    0.222    0.000 {sum}
+        6    0.000    0.000    0.000    0.000 {time.clock}
+       12    0.000    0.000    0.000    0.000 {unichr}
+
+
