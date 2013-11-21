@@ -23,7 +23,13 @@ chrome.runtime.onMessage.addListener(
           });
 
     });
+    }else if (request.name == 'screenshot') {
+      console.log("received screenshot message")
+        chrome.tabs.captureVisibleTab(null, null, function(dataUrl) {
+            sendResponse({ screenshotUrl: dataUrl });
+        });
     }
+    return true;
 });
 
 

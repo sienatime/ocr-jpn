@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener(
         console.log("got ready message")
         $('#info').html("")
         openDialog();
-  }
+    }
   });
 
 openDialog();

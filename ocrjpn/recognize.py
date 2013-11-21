@@ -11,10 +11,13 @@ import split_images
 
 AVG_BIG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
-verbose = True
+verbose = False
 LAST_TIME = None
 TOTAL_TIME = []
 mode = None
+
+conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
+cur = conn.cursor()
 
 if len(argv) == 3:
     script, img, mode = argv
@@ -120,8 +123,6 @@ def process_image(im):
     out = resize_image(im, avg)
     thrs, black_pixels = threshold_image(out, avg)
 
-    print "AVERAGE", avg
-
     return crop_image(thrs, black_pixels)
 
 def compare_to_template(im, template):
@@ -161,10 +162,6 @@ def run_thru_templates_local(path, im):
     return scores
 
 def run_thru_templates_db(im, island_range, white_lower, im_white):
-    print "Looking through templates"
-    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
-    cur = conn.cursor()
-
     char_type = 'kanji'
 
     if mode:
@@ -172,8 +169,6 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
             char_type = "kanji"
         else:
             char_type = mode
-
-    print "white lower", white_lower
 
     if verbose:
         print "test image islands", im_white
@@ -187,14 +182,16 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
         if island_mode:
             if island_range == 0:
                 #experimenting with just using the gothic font. actually mincho doesn't have the small whites column so... yeah...........
-                print "white islands", im_white
+                if verbose:
+                    print "white islands", im_white
                 cur.execute("SELECT code, img_path from characters where font = 'gothic' and char_type = %s and img_size = 'big' and sm_whites = %s;", (char_type, im_white))
             else:
-                print "searching white islands", white_lower, im_white+island_range, char_type
+                if verbose:
+                    print "searching white islands", white_lower, im_white+island_range, char_type
                 cur.execute("SELECT code, img_path from characters where font = 'gothic' and char_type = %s and img_size = 'big' and (sm_whites = %s or sm_whites = %s);", (char_type, white_lower, im_white+island_range))
 
         else:
-            cur.execute("SELECT code, img_path, font from characters where char_type = %s and img_size = 'big' and sm_whites is not null;", (char_type))
+            cur.execute("SELECT code, img_path from characters where img_size = 'big' and sm_whites is not null;", (char_type))
     
     matches = cur.fetchall()
 
@@ -214,8 +211,6 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
     return scores
 
 def run_thru_kana(im):
-    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
-    cur = conn.cursor()
     cur.execute("SELECT code, img_path, font from characters where font = 'gothic' and (char_type = 'hiragana' or char_type = 'katakana');")
     matches = cur.fetchall()
 
@@ -229,13 +224,10 @@ def run_thru_kana(im):
     return scores
 
 def search_similar_chars(im, candidates):
-    print "searching similar characters"
     #candidates is a list of scores, which are a tuple like (code, score)
-    conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
-    cur = conn.cursor()
-
+    print candidates
     highest = candidates[0][0]
-    print "HIGHEST", highest
+    print "Similarity seed:", unichr(highest)
 
     cur.execute("SELECT similar_code, similar_code_path from similarities where code = %s;", (highest,))
 
@@ -254,8 +246,6 @@ def search_similar_chars(im, candidates):
         all_scores = candidates + sorted_sim_scores
         all_scores = sorted(all_scores, key=lambda score: score[1])
 
-        print all_scores
-
         final_candidates = []
 
         for i in range(3):
@@ -272,10 +262,8 @@ def search_similar_chars(im, candidates):
         return final_candidates
 
 def search_local(input_imgs, paths):
-    print "SEARCHING LOCAL TEMPLATES"
     for image in input_imgs:
         black, white = find_islands(image)
-        print "black: %s white: %s" % (black, white)
         scores = []
         for path in paths:
             scores = scores + run_thru_templates_local(path, image)
@@ -285,7 +273,6 @@ def search_local(input_imgs, paths):
 
 def search_db(input_imgs):
     print_time()
-    print "SEARCHING DATABASE"
 
     valid_white_vals = set([25,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0])
 
@@ -295,54 +282,57 @@ def search_db(input_imgs):
 
         kana_scores = run_thru_kana(image)
         sorted_kana_scores = sorted(kana_scores, key=lambda score: score[1]) 
-        print "MOST SIMILAR KANA", unichr(sorted_kana_scores[0][0]), sorted_kana_scores[0][1], sorted_kana_scores[0][2]
+
         high_kana_score = sorted_kana_scores[0][1]
-        
-        if high_kana_score < 0.25:
-            print "kana score was good enough"
-            adjusted_candidates = search_similar_chars(image, sorted_kana_scores[:3])
-            return_vals.append(adjusted_candidates)
-        else:
-            final_score = 1
-            island_range = 0
-            white_upper = im_white
+        print "highest kana score", unichr(sorted_kana_scores[0][0]), high_kana_score
 
-            while white_upper not in valid_white_vals:
-                #pick another one
-                print "not a valid number of white islands"
-                white_upper -= 1
+        adjust_these = []
 
-            sorted_scores = []
+        if high_kana_score < 0.3:
+            print "kana score was good enough", high_kana_score
+            adjust_these += sorted_kana_scores[:3]
 
-            while final_score > 0.3:
-                print "searching..."
-                white_lower = im_white-island_range
-                if white_lower <= 1:
-                    print "GIVING UP"
-                    break
+        final_score = 1
+        island_range = 0
+        white_upper = im_white
 
-                scores = []
-                scores = scores + run_thru_templates_db(image, island_range, white_lower, white_upper)
+        while white_upper not in valid_white_vals:
+            #pick another one
+            print "not a valid number of white islands"
+            white_upper -= 1
 
-                sorted_scores = sorted(scores, key=lambda score: score[1]) 
-                island_range += 1
-                final_score = sorted_scores[0][1]
-        
-            debug_vals = sorted_scores[:3]
+        sorted_scores = []
 
-            for row in debug_vals:
-                print unichr(row[0]), row[1]
+        while final_score > 0.3:
+            print "searching..."
+            white_lower = im_white-island_range
+            if white_lower <= 1:
+                print "GIVING UP"
+                break
 
-            if len(sorted_scores) == 0:
-                #probably means it picked up a little dirt or something.....
-                image.show()
+            scores = []
+            scores = scores + run_thru_templates_db(image, island_range, white_lower, white_upper)
 
-            adjusted_candidates = search_similar_chars(image, sorted_scores[:3])
+            sorted_scores = sorted(scores, key=lambda score: score[1]) 
+            island_range += 1
+            final_score = sorted_scores[0][1]
+    
+        if len(sorted_scores) == 0:
+            #probably means it picked up a little dirt or something.....
+            image.show()
 
-            return_vals.append(adjusted_candidates)
-            print_time()
+        adjust_these += sorted_scores[:3]
+
+        adjusted_candidates = search_similar_chars(image, sorted(adjust_these, key=lambda score: score[1]))
+        return_vals.append(adjusted_candidates)
+
+        print_time()
 
     print_total_time()
+
+    for row in return_vals:
+        print row[0], row[1], row[2]
+
     return return_vals
 
 def print_time():
@@ -361,7 +351,6 @@ def print_time():
 
 def print_total_time():
     global TOTAL_TIME
-    print TOTAL_TIME
     print "\nTotal time:", sum(TOTAL_TIME)
 
 def ocr_image(inp):

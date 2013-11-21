@@ -1,6 +1,5 @@
 .OCRJPN{
     font-family: Arial;
-    font-weight: bold;
 }
 
 .OCRJPN .ui-icon, .OCRJPN .ui-widget-content .ui-icon {
@@ -9,8 +8,9 @@
     /*background-image: url('ui-icons_888888_256x240.png'); */
 }
 
-.OCRJPN.ui-dialog .ui-dialog-titlebar-close{
+.OCRJPN .ui-dialog-titlebar-close{
     width: 20px;
+    height: 20px;
 }
 
 .OCRJPN .ui-icon-closethick {
@@ -25,6 +25,7 @@
     background: lightgray;
     padding: 2px;
     border-bottom: 1px solid #808080;
+    font-weight: bold;
 }
 
 .OCRJPN .ui-dialog-title{
@@ -37,7 +38,7 @@
     margin: 0;
     text-align: center;
     display: block;
-    padding: 2px;
+    padding: 0;
 }
 
 .OCRJPN button{
@@ -90,7 +91,17 @@
     background: #4e4775;
     color: white;
     font-family: Arial;
-    padding: 20px;
+    padding: 5px;
     border: 1px white solid;
     z-index: 20000000;
+}
+
+#OCRJPNtext{
+    padding-top: 5px;
+    clear: both;
+    font-size: 2em;
+}
+
+#OCRJPNkanjiinfo .ui-dialog-titlebar-close{
+    float: right;
 }
