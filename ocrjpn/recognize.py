@@ -227,6 +227,12 @@ def search_similar_chars(im, candidates):
     #candidates is a list of scores, which are a tuple like (code, score)
     print candidates
     highest = candidates[0][0]
+
+    already_searched = {}
+
+    for score_tup in candidates:
+        already_searched[score_tup[0]] = 1
+
     print "Similarity seed:", unichr(highest)
 
     cur.execute("SELECT similar_code, similar_code_path from similarities where code = %s;", (highest,))
@@ -237,29 +243,19 @@ def search_similar_chars(im, candidates):
         sim_scores = []
         for row in matches:
             sim_code, sim_img_path = row
-            template = Image.open(sim_img_path).convert("L")
-            the_score = compare_to_template(im, template)
-            sim_scores.append( (sim_code, the_score) )
+            if not already_searched.get(sim_code, None):
+                template = Image.open(sim_img_path).convert("L")
+                the_score = compare_to_template(im, template)
+                sim_scores.append( (sim_code, the_score) )
 
         sorted_sim_scores = sorted(sim_scores, key=lambda score: score[1]) 
 
         all_scores = candidates + sorted_sim_scores
         all_scores = sorted(all_scores, key=lambda score: score[1])
 
-        final_candidates = []
-
-        for i in range(3):
-            final_candidates.append( unichr(all_scores[i][0]) )
-
-        return final_candidates
+        return [ unichr(all_scores[i][0]) for i in range(3)]
     else:
-        # no similar characters, just keep going.
-        final_candidates = []
-
-        for i in range(3):
-            final_candidates.append( unichr(candidates[i][0]) )
-
-        return final_candidates
+        return [ unichr(candidates[i][0]) for i in range(3)]
 
 def search_local(input_imgs, paths):
     for image in input_imgs:
@@ -278,6 +274,7 @@ def search_db(input_imgs):
 
     return_vals = []
     for image in input_imgs:
+        # image.show()
         im_black, im_white = find_islands(image)
 
         kana_scores = run_thru_kana(image)
@@ -333,6 +330,9 @@ def search_db(input_imgs):
     for row in return_vals:
         print row[0], row[1], row[2]
 
+    if not return_vals:
+        return "Didn't find anything. Resize box and try again."
+        
     return return_vals
 
 def print_time():

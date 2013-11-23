@@ -19,6 +19,7 @@ chrome.runtime.onMessage.addListener(
     //this will only get run if you try to click the button before the page is done loading.
     if (request.greeting == "ready"){
         console.log("got ready message")
+        //this clears the Loading... message from above if we put it there.
         $('#info').html("")
         openDialog();
     }

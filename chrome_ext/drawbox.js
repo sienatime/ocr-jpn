@@ -21,11 +21,18 @@ $(document).ready(function() {
 
     $('#OCRJPNtext').html('<img src="images/loader.gif">'); 
 
+    $( "#OCRJPNocrThis" ).button({ icons: { primary: "ui-icon-check" }});
+
 
     $('#OCRJPNocrThis').click(function(){
         $('#OCRJPNtext').html("Here's me faking some stuff")
     });
 
+    $('.OCRJPN.ui-dialog').resize(function(){
+        // LOL THIS IS WHY I DIDN'T WANT TO DO THIS
+        height = $('#OCRJPNdialog').height() - $('.OCRJPN.ui-dialog #OCRJPNdialogtext').height() - parseInt( $('#OCRJPNwindowwrapper').css('border-bottom') ) - parseInt( $('#OCRJPNwindowwrapper').css('border-top') ) - parseInt( $('#OCRJPNocrwindow').css('border-bottom') ) - parseInt( $('#OCRJPNocrwindow').css('border-top') );
+        $('#OCRJPNocrwindow').height(height)
+    });
 
 });
 

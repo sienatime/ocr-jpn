@@ -2,6 +2,7 @@ from PIL import Image
 import re
 import cStringIO
 import recognize
+import pdb
 
 def img_from_string(imgdata, coords):
     imgstr = re.search(r'base64,(.*)', imgdata).group(1)
@@ -11,14 +12,13 @@ def img_from_string(imgdata, coords):
         lbox.append( clean_coords(val) )
 
     box = tuple(lbox)
-    print box
-
     tempimg = cStringIO.StringIO(imgstr.decode('base64'))
 
     im = Image.open(tempimg)
     # im.show()
     cropped = im.crop(box)
     # cropped.show()
+    # pdb.set_trace()
 
     return recognize.ocr_image(cropped)
 

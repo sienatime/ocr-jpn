@@ -1,7 +1,6 @@
 console.log("selectimage.js is a content script")
 
-windowOpen = false;
-
+// when the page you are on has actually finished loading, selectimage.js sends a message saying it is ready. this way, we can do stuff as soon as the page is done loading.
 chrome.runtime.sendMessage({greeting: "ready"}, function(response) {
   console.log(response.farewell);
 });
@@ -10,60 +9,77 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.greeting == "hello"){
 
-        var flag = false;
-
+        // if we have "closed" a dialog already, actually get rid of the elements (closing it just sets the display to none but it's hard to get it to come back.)
         if ($('.OCRJPN').css("display") == "none" ){
             $('#OCRJPNdialog').remove()
             $('.OCRJPN').remove()
         }
 
-        if( $('.OCRJPN').length == 0 ){
+        // if there is not already an open OCRJPN dialog, add one to the page.
+        if( $('.OCRJPN.ui-dialog').length == 0 ){
 
-            d = $('<div id="OCRJPNdialog" title="OCR-JPN"><div id="OCRJPNdialogtext"><button id="OCRJPNocrThis">GO</button></div><div id="OCRJPNocrwindow"></div></div>');
-            if (!flag){
-                $('body').append(d);
-            }
-            
+            d = $('<div id="OCRJPNdialog" title="OCR-JPN"><div id="OCRJPNdialogtext"><button id="OCRJPNocrThis"></button></div><div id="OCRJPNwindowwrapper"><div id="OCRJPNocrwindow"></div></div></div>');
+
+            $('body').append(d);
+
+            // turns dialog HTML into a jQuery UI dialog
             $('#OCRJPNdialog').dialog();
+
+            $('.OCRJPN.ui-dialog').resize(function(){
+                // LOL THIS IS WHY I DIDN'T WANT TO DO THIS. sets the height of the OCR window dynamically on resize.
+                height = $('#OCRJPNdialog').height() - $('.OCRJPN.ui-dialog #OCRJPNdialogtext').height() - parseInt( $('#OCRJPNwindowwrapper').css('border-bottom') ) - parseInt( $('#OCRJPNwindowwrapper').css('border-top') ) - parseInt( $('#OCRJPNocrwindow').css('border-bottom') ) - parseInt( $('#OCRJPNocrwindow').css('border-top') );
+                $('#OCRJPNocrwindow').height(height)
+            });
+
+            // capture button
+            $( "#OCRJPNocrThis" ).button({ icons: { primary: "ui-icon-check" }});
+
+            // when you click the capture button, send the position of the #ocrwindow. PIL needs 4 coordinates that are x1, y1, x2, y2 and NOT x, y, width, height.
+            // important to remember to take into account scrollTop() for when the user has scrolled the page down.
             $('#OCRJPNocrThis').click(function(){
-                var x1 = $('#OCRJPNocrwindow').offset().left
-                var y1 = $('#OCRJPNocrwindow').offset().top - $('body').scrollTop()
-                var x2 = $('#OCRJPNocrwindow').offset().left + $('#OCRJPNocrwindow').width()
-                var y2 = $('#OCRJPNdialog').offset().top + $('#OCRJPNdialog').height() + parseInt($('#OCRJPNdialog').css('border-bottom').charAt(0) - $('body').scrollTop())
+                var x1 = $('#OCRJPNocrwindow').offset().left + parseInt( $('#OCRJPNocrwindow').css('border-left') );
+                var y1 = $('#OCRJPNocrwindow').offset().top - $('body').scrollTop() + parseInt( $('#OCRJPNocrwindow').css('border-top') );
+                var x2 = $('#OCRJPNocrwindow').offset().left + $('#OCRJPNocrwindow').width();
+                var y2 = $('#OCRJPNocrwindow').offset().top + $('#OCRJPNocrwindow').height() - $('body').scrollTop();
                 
+                // sends a message to background.js to take the screenshot.
                 chrome.runtime.sendMessage( {greeting: "capture", x1:x1, y1:y1, x2:x2, y2:y2}, function(response) {
                     $('body').append(response);
                 });
 
+                // if there is not a kanjiinfo div open already, add one to the page for the response.
                 if ( $('#OCRJPNkanjiinfo').length  == 0 ){
                     info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNtext"></div></div>');
                     $('body').append(info)
+                    // the cancel lets you select the text that appears in the info div.
                     $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext" }); 
+                    // there's a close button on the info div.
                     $('#OCRJPNkanjiinfoclose').click(function(){
                         $(this).parent().remove()
                     });
                 }
 
+                // aligns the info div to the ocr dialog.
                 adjustInfoPane();
                 loader = chrome.extension.getURL("images/loader.gif")
                 $('#OCRJPNtext').html('<img src=' + loader + '>');
             });
 
-            $('#OCRJPNtest').click(function(){
-                takeScreenshot($('#OCRJPNocrwindow'), renderPreview)
-            });
+        // not using this right now but it goes with the code at the bottom of the file.
+        $('#OCRJPNtest').click(function(){
+            takeScreenshot($('#OCRJPNocrwindow'), renderPreview)
+        });
 
-            flag = true;
         }
     }else if(request.greeting == "displayResults"){
         console.log("display results");
-        adjustInfoPane();
+        // this is what actually adds the results of the AJAX query to the info div.
         $('#OCRJPNtext').text(request.results);
     }
-        sendResponse({farewell: "goodbye"});
-    
+        
   });
 
+// for debug purposes only
 function printCoords(){
     console.log($('#OCRJPNocrwindow').offset().left)
     console.log($('#OCRJPNocrwindow').offset().top - $('body').scrollTop() - $('body').css('margin-top'))
@@ -71,9 +87,10 @@ function printCoords(){
     console.log($('#OCRJPNdialog').offset().top + $('#OCRJPNdialog').height() + parseInt($('#OCRJPNdialog').css('border-bottom').charAt(0)) - $('body').scrollTop())
 }
 
+// aligns the kanji info div with the ocr dialog
 function adjustInfoPane(){
-    put_top = $('.OCRJPN').offset().top + 'px'
-    put_left = $('.OCRJPN').offset().left + $('.OCRJPN').width() + 20 + 'px'
+    put_top = $('.OCRJPN.ui-dialog').offset().top + 'px'
+    put_left = $('.OCRJPN.ui-dialog').offset().left + $('.OCRJPN.ui-dialog').width() + 20 + 'px'
 
     console.log(put_top)
     console.log(put_left)
@@ -82,8 +99,8 @@ function adjustInfoPane(){
     $('#OCRJPNkanjiinfo').css('left', put_left);
 }
 
+// this code is adapted from http://louisrli.github.io/blog/2013/01/16/javascript-canvas-screenshot/#.Uo-pbsR018E. I am not actually using it though. But I kept it just in case.
 /* Takes a screenshot and uses it in a callback as a canvas */
-
 takeScreenshot = function($element, callback) {
     chrome.extension.sendMessage({name: 'screenshot'}, function(response) {
         var data = response.screenshotUrl;

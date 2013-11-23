@@ -50,13 +50,10 @@ def split_images(im, direction):
     start_x = 0
     start_y = 0
     
-    im.show()
-
     #okay so if the direction is WIDE we try to split on the columns. BUT we might run into a problem if there is like, one bar of dark pixels on the bottom, in which case we need to split horiziontally FIRST. but idk yet how i am going to do that.
     if direction == "wide":
         white_cols = find_white_cols(im)
         if len(white_cols) == 0:
-            im.show()
             print "didn't find any white columns"
             white_rows = find_white_rows(im)
             print white_rows

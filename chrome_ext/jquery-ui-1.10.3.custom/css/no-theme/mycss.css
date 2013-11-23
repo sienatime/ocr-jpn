@@ -2,45 +2,9 @@
     font-family: Arial;
 }
 
-.OCRJPN .ui-icon, .OCRJPN .ui-widget-content .ui-icon {
-    background-image: url('chrome-extension://__MSG_@@extension_id__/jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png');
-    /* development only */
-    /*background-image: url('ui-icons_888888_256x240.png'); */
-}
+/* jQuery UI buttons */
 
-.OCRJPN .ui-dialog-titlebar-close{
-    width: 20px;
-    height: 20px;
-}
-
-.OCRJPN .ui-icon-closethick {
-    background-position: -96px -128px;
-}
-.OCRJPN .ui-icon {
-    width: 16px;
-    height: 16px;
-}
-
-.OCRJPN .ui-dialog-titlebar{
-    background: lightgray;
-    padding: 2px;
-    border-bottom: 1px solid #808080;
-    font-weight: bold;
-}
-
-.OCRJPN .ui-dialog-title{
-    width: 100%;
-    text-align: center;
-}
-
-.OCRJPN.ui-dialog #OCRJPNdialogtext{
-    background: lightgray;
-    margin: 0;
-    text-align: center;
-    display: block;
-    padding: 0;
-}
-
+/* default webkit button styles. a lot of these get overwritten by jQuery UI, but just the fact that we are inserting content on top of other CSS means that we have to be really careful about starting with a solid base to ensure that our content looks roughly the same across websites.*/
 .OCRJPN button{
     outline: none;
     align-items: flex-start;
@@ -69,22 +33,125 @@
     text-align: start;
 }
 
-.OCRJPN.ui-dialog{
-    border: 7px solid rgba(122, 122, 122, 0.9);
-    padding: 0;
-    z-index: 100000000000;
+.OCRJPN button:active{
+    border-style: inset;
 }
 
+.OCRJPN .ui-button{
+    width: 20px;
+    height: 20px;
+}
+
+.OCRJPN .ui-icon {
+    width: 16px;
+    height: 16px;
+    left: 50%;
+    margin-left: -8px;
+    /*background-image: url('chrome-extension://__MSG_@@extension_id__/jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png');*/
+    /* development only */
+    /*background-image: url('ui-icons_888888_256x240.png'); */
+}
+
+#OCRJPNocrThis{
+    width: 100%;
+}
+
+/* icon credit: http://sixrevisions.com/freebies/icons/375-retina-display-ready-icons/*/
+.OCRJPN .ui-icon-check{
+    /*background-position: -65px -145px;*/
+    background: url("chrome-extension://__MSG_@@extension_id__/jquery-ui-1.10.3.custom/css/no-theme/camera.png") no-repeat;
+    background-size: 14px 14px;
+    margin-left: -7px;
+}
+
+.OCRJPN .ui-dialog-titlebar-close{
+    /* lines up veritcally with ocrwindow */
+    right: 14px;
+}
+
+/* icon credit: http://sixrevisions.com/freebies/icons/375-retina-display-ready-icons/*/
+.OCRJPN .ui-icon-closethick {
+    /*background-position: -96px -128px;*/
+    background: url("chrome-extension://__MSG_@@extension_id__/jquery-ui-1.10.3.custom/css/no-theme/multiply.png") no-repeat;
+    background-size: 16px 16px;
+}
+
+.OCRJPN .ui-dialog .ui-dialog-titlebar-close {
+    position: absolute;
+    right: 0.3em;
+    top: 50%;
+    width: 21px;
+    margin: -10px 0px 0px;
+    padding: 1px;
+    height: 20px;
+}
+
+/* kanjiinfo close button */
+#OCRJPNkanjiinfo .ui-dialog-titlebar-close{
+    float: right;
+}
+
+#OCRJPNkanjiinfoclose{
+    right: 0.1em;
+}
+
+/* Dialog */
+
+.OCRJPN.ui-dialog{
+    box-shadow: rgb(136, 136, 136) -5px 5px 15px;
+    padding: 0;
+    z-index: 100000000000;
+    border-radius: 15px;
+    border: 1px solid #888888;
+}
+
+.OCRJPN .ui-dialog-titlebar, .OCRJPN.ui-dialog #OCRJPNdialogtext{
+    background: rgba(245, 245, 245, 0.8);
+}
+
+/* div */
+.OCRJPN .ui-dialog-titlebar{
+    padding: 7px 14px;
+    border-bottom: none;
+    font-weight: bold;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+/* span */
+.OCRJPN .ui-dialog-title{
+    width: 100%;
+    text-align: left;
+    font-size: 18px;
+    /* lines up veritcally with ocrwindow */
+    /*padding-left: 8px;*/
+}
+
+.OCRJPN.ui-dialog #OCRJPNdialogtext{
+    margin: 0;
+    display: block;
+    padding: 0 14px;
+}
+
+/* dialogtext + windowwrapper */
 #OCRJPNdialog{
     padding: 0;
     overflow: hidden;
 }
 
-#OCRJPNocrwindow{
-    min-height: 10px;
+#OCRJPNwindowwrapper{
+    border: 15px rgba(245, 245, 245, 0.8) solid;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
 }
 
-#OCRJPNkanjiinfo{
+#OCRJPNocrwindow{
+    height: 100px;
+    border: 1px #888888 solid;
+}
+
+/* Kanji Info Pane */
+div#OCRJPNkanjiinfo{
     position: absolute;
     top: 20px;
     left: 20px;
@@ -94,14 +161,21 @@
     padding: 5px;
     border: 1px white solid;
     z-index: 20000000;
+    cursor: move;
 }
 
+/* where the response from the server goes */
 #OCRJPNtext{
     padding-top: 5px;
     clear: both;
     font-size: 2em;
+    cursor: text;
 }
 
-#OCRJPNkanjiinfo .ui-dialog-titlebar-close{
-    float: right;
+
+
+.OCRJPN .ui-resizable-se {
+    left: 100%;
+    right: -5px;
+    bottom: -5px;
 }
