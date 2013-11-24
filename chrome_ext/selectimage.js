@@ -61,7 +61,7 @@ chrome.runtime.onMessage.addListener(
 
                 // aligns the info div to the ocr dialog.
                 adjustInfoPane();
-                loader = chrome.extension.getURL("images/loader.gif")
+                loader = chrome.extension.getURL("images/henoheno.gif")
                 $('#OCRJPNtext').html('<img src=' + loader + '>');
             });
 

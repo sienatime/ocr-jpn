@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "OCR-JPN",
-  "description": "Select images with Japanese characters and get a dictionary definition.",
+  "description": "Turn images with Japanese characters on them into text.",
   "version": "1.0",
 
 "permissions": ["tabs", "<all_urls>", "activeTab", "http://127.0.0.1/*"],
@@ -17,12 +17,10 @@
   ,  "content_scripts": [
     {
       "matches" : ["<all_urls>"],
-      "css": ["jquery-ui-1.10.3.custom/css/no-theme/jquery-ui-1.10.3.custom.css", "jquery-ui-1.10.3.custom/css/no-theme/mycss.css"],
+      "css": ["jquery-ui-1.10.3.custom/css/no-theme/jquery-ui-1.10.3.custom.css", "mycss.css"],
       "js": ["jquery-ui-1.10.3.custom/js/jquery-1.9.1.js", "jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js", "selectimage.js"],
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources":[
-  "jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png", "images/loader.gif", "jquery-ui-1.10.3.custom/css/no-theme/camera.png", "jquery-ui-1.10.3.custom/css/no-theme/multiply.png"
-  ]
+  "web_accessible_resources":[ "images/henoheno.gif", "images/camera.png", "images/multiply.png" ]
 }

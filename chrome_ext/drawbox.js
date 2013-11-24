@@ -19,7 +19,7 @@ $(document).ready(function() {
 
     adjustInfoPane();
 
-    $('#OCRJPNtext').html('<img src="images/loader.gif">'); 
+    $('#OCRJPNtext').html('<img src="images/henoheno.gif">'); 
 
     $( "#OCRJPNocrThis" ).button({ icons: { primary: "ui-icon-check" }});
 
