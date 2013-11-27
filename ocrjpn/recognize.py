@@ -1,6 +1,7 @@
   # -*- coding: utf-8 -*-
 from PIL import Image
 from PIL import ImageChops
+from PIL import ImageOps
 from sys import argv
 from islands import find_islands
 import psycopg2
@@ -11,9 +12,10 @@ import split_images
 
 AVG_BIG_TEMPLATE_HEIGHT = 80
 THRESHOLD_OFFSET = 20
-verbose = False
+verbose = True
 LAST_TIME = None
 TOTAL_TIME = []
+ISLAND_MODE = True
 mode = None
 
 conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
@@ -79,9 +81,11 @@ def threshold_image(im, avg):
     # threshold the image
     for i in range(im_y):
         for j in range(im_x):
+            # if the pixel value is LOWER than the average, turn to black
             if im.getpixel((j,i)) < avg:
                 black_pixels.append((j,i))
                 im.putpixel( (j,i), (0) )
+            # otherwise turn it white
             else:
                 im.putpixel( (j,i), (255) )
 
@@ -119,6 +123,7 @@ def process_image(im):
 
     #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
     avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
+    print "AVG", avg
 
     out = resize_image(im, avg)
     thrs, black_pixels = threshold_image(out, avg)
@@ -178,8 +183,8 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
         # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
         cur.execute("SELECT code, img_path from characters where char_type = %s and img_size = %s;", (char_type))
     else:
-        island_mode = True
-        if island_mode:
+        global ISLAND_MODE
+        if ISLAND_MODE:
             if island_range == 0:
                 #experimenting with just using the gothic font. actually mincho doesn't have the small whites column so... yeah...........
                 if verbose:
@@ -191,7 +196,7 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
                 cur.execute("SELECT code, img_path from characters where font = 'gothic' and char_type = %s and img_size = 'big' and (sm_whites = %s or sm_whites = %s);", (char_type, white_lower, im_white+island_range))
 
         else:
-            cur.execute("SELECT code, img_path from characters where img_size = 'big' and sm_whites is not null;", (char_type))
+            cur.execute("SELECT code, img_path from characters where img_size = 'big' and font = 'gothic' and sm_whites is not null;", (char_type))
     
     matches = cur.fetchall()
 
@@ -274,7 +279,6 @@ def search_db(input_imgs):
 
     return_vals = []
     for image in input_imgs:
-        # image.show()
         im_black, im_white = find_islands(image)
 
         kana_scores = run_thru_kana(image)
@@ -313,6 +317,9 @@ def search_db(input_imgs):
             sorted_scores = sorted(scores, key=lambda score: score[1]) 
             island_range += 1
             final_score = sorted_scores[0][1]
+
+            if not ISLAND_MODE:
+                break
     
         if len(sorted_scores) == 0:
             #probably means it picked up a little dirt or something.....
@@ -362,6 +369,9 @@ def ocr_image(inp):
     if sample_corners(im):
         print "inverting image"
         im = ImageChops.invert(im)
+
+    # experimenting with adding some extra buffer but it doesn't actually seem to make a consistent difference in accuracy.
+    # im = ImageOps.expand(im, border=1, fill=255)
 
     new_image = process_image(im)
 

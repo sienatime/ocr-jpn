@@ -10,6 +10,12 @@ def create_list_of_unicode_strings():
     for img in list_of_files:
         print "u\'"+img.split(".bmp")[0]+"\',",
 
+def print_kanji_from_file():
+    f = open("codepoints.txt")
+    lines = f.readlines()
+    for line in lines:
+        print unichr(int(line))
+
 def print_kanji_from_filenames():
     global PATH
     list_of_files = os.listdir(PATH)
@@ -114,6 +120,7 @@ def main():
         # print str(ord(names[i])) + ".bmp"
 
 if __name__ == "__main__":
+    pass
     # create_list_of_unicode_strings()
     # main()
     # codepts_from_chars()
@@ -121,4 +128,4 @@ if __name__ == "__main__":
     # create_list_of_unicode_strings_from_list()
     # find_missing_files()
     # delete_duplicates()
-    move_matched_files()
+    # move_matched_files()

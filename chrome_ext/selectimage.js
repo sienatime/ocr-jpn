@@ -30,8 +30,7 @@ chrome.runtime.onMessage.addListener(
                 height = $('#OCRJPNdialog').height() - $('.OCRJPN.ui-dialog #OCRJPNdialogtext').height() - parseInt( $('#OCRJPNwindowwrapper').css('border-bottom') ) - parseInt( $('#OCRJPNwindowwrapper').css('border-top') ) - parseInt( $('#OCRJPNocrwindow').css('border-bottom') ) - parseInt( $('#OCRJPNocrwindow').css('border-top') );
                 $('#OCRJPNocrwindow').height(height)
             });
-
-            // capture button
+         // capture button
             $( "#OCRJPNocrThis" ).button({ icons: { primary: "ui-icon-check" }});
 
             // when you click the capture button, send the position of the #ocrwindow. PIL needs 4 coordinates that are x1, y1, x2, y2 and NOT x, y, width, height.
@@ -73,8 +72,35 @@ chrome.runtime.onMessage.addListener(
         }
     }else if(request.greeting == "displayResults"){
         console.log("display results");
+        $('#OCRJPNtext').html("");
         // this is what actually adds the results of the AJAX query to the info div.
-        $('#OCRJPNtext').text(request.results);
+        console.log(request);
+        // don't parse the JSON--$.ajax did it for you
+        var candidates = request.results.candidates
+        var next_candidates = $('<div id="OCRJPNnextcandidates"></div>')
+
+        for (var i = 0; i < candidates.length; i++) {
+            var characters = candidates[i]
+            // maybe make a span or something that has an ID and then put the 0 element in that span
+            // then you can do stuff with the other things.
+            var id = "chara" + i
+            var chara = $('<span id="' + id + '" class="OCRJPNresult"></span>')
+            
+
+            for (var j = 0; j < characters.length; j++) {
+                var spanny = $('<span id="'+ id + 'candidate'+ j + '" class="OCRJPNcandidate"></span>')
+                spanny.text(characters[j])
+                next_candidates.append(spanny)
+            };
+
+            chara.text(candidates[i][0])
+            chara.click(function(){
+                console.log("you clicked " + this.id );
+            })
+            $('#OCRJPNtext').append(chara);
+        };
+        $('#OCRJPNtext').append(next_candidates);
+       
     }
         
   });

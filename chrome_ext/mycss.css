@@ -100,13 +100,13 @@
 .OCRJPN.ui-dialog{
     box-shadow: rgb(136, 136, 136) -5px 5px 15px;
     padding: 0;
-    z-index: 1000000000;
+    z-index: 1000000000 t;
     border-radius: 15px;
     border: 1px solid #888888;
 }
 
 .OCRJPN .ui-dialog-titlebar, .OCRJPN.ui-dialog #OCRJPNdialogtext{
-    background: rgba(245, 245, 245, 0.8);
+    background: rgba(186, 236, 255, 0.8);
 }
 
 /* div */
@@ -140,7 +140,7 @@
 }
 
 #OCRJPNwindowwrapper{
-    border: 15px rgba(245, 245, 245, 0.8) solid;
+    border: 15px rgba(186, 236, 255, 0.8) solid;
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
 }
@@ -155,13 +155,16 @@ div#OCRJPNkanjiinfo{
     position: absolute;
     top: 20px;
     left: 20px;
-    background: #4e4775;
     color: white;
     font-family: Arial;
-    padding: 5px;
-    border: 1px white solid;
     z-index: 1000000000;
     cursor: move;
+    background: #0083ca;
+}
+
+div#OCRJPNkanjiinfo, .OCRJPNcandidate{
+    border: 1px white solid;
+    padding: 5px;
 }
 
 /* where the response from the server goes */
@@ -170,6 +173,27 @@ div#OCRJPNkanjiinfo{
     clear: both;
     font-size: 2em;
     cursor: text;
+    position: relative;
+}
+
+.OCRJPNresult{
+    cursor: pointer;
+}
+
+.OCRJPNcandidate{
+    background: #00aeef;
+}
+
+.candidateWrapper{
+    display: block;
+    position: absolute;
+    top: -46px;
+    display: none;
+    cursor: pointer;
+}
+
+.OCRJPNcandidate:hover{
+    background: #f9a01b;
 }
 
 .OCRJPN .ui-resizable-se {
@@ -177,3 +201,11 @@ div#OCRJPNkanjiinfo{
     right: -5px;
     bottom: -5px;
 }
+
+#candidateWrapper1{
+    left: 33px;
+}
+
+.OCRJPNresult::selection {
+    background: #f9a01b; /* Safari */
+    }
