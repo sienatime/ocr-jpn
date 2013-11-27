@@ -113,8 +113,8 @@ chrome.runtime.onMessage.addListener(
                     id = this.id[5] //ugh this is so bad
                     $('#candidateWrapper'+id).css('display', 'block')
                 })
-                $('#OCRJPNtext').append(chara);
-                $('#OCRJPNkanjiinfo').append(candidate_wrapper);
+                    $('#OCRJPNtext').append(chara);
+                    $('#OCRJPNkanjiinfo').append(candidate_wrapper);
                 candidate_wrapper.css('left', $('#' + id).width() * i)
             };
         }else{

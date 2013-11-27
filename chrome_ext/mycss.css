@@ -170,14 +170,15 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
 /* where the response from the server goes */
 #OCRJPNtext{
     padding-top: 5px;
-    clear: both;
     position: relative;
+    text-align: left;
 }
 
 #OCRJPNresultwrapper{
-    font-size: 2em;
+    font-size: 32px;
     overflow: hidden;
     margin-top: 20px;
+    clear: both;
 }
 
 .OCRJPNresult{
@@ -191,9 +192,10 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
 .candidateWrapper{
     display: block;
     position: absolute;
-    top: -46px;
+    top: -5px;
     display: none;
     cursor: pointer;
+    font-size: 24px;
 }
 
 .OCRJPNcandidate:hover{
