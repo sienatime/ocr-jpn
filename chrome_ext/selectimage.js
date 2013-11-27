@@ -42,13 +42,17 @@ chrome.runtime.onMessage.addListener(
                 var y2 = $('#OCRJPNocrwindow').offset().top + $('#OCRJPNocrwindow').height() - $('body').scrollTop();
                 
                 // sends a message to background.js to take the screenshot.
-                chrome.runtime.sendMessage( {greeting: "capture", x1:x1, y1:y1, x2:x2, y2:y2}, function(response) {
-                    $('body').append(response);
-                });
+                try{
+                    chrome.runtime.sendMessage( {greeting: "capture", x1:x1, y1:y1, x2:x2, y2:y2}, function(response) {
+                        $('body').append(response);
+                    });
+                }catch(e){
+                    console.log("Lost connection to server.")
+                }
 
                 // if there is not a kanjiinfo div open already, add one to the page for the response.
                 if ( $('#OCRJPNkanjiinfo').length  == 0 ){
-                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNtext"></div></div>');
+                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div></div></div>');
                     $('body').append(info)
                     // the cancel lets you select the text that appears in the info div.
                     $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext" }); 
@@ -56,54 +60,80 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNkanjiinfoclose').click(function(){
                         $(this).parent().remove()
                     });
+                    $('#OCRJPNkanjiinfo').mouseleave(function(){
+                        $('.candidateWrapper').css('display','none');
+                    })
                 }
 
                 // aligns the info div to the ocr dialog.
                 adjustInfoPane();
                 loader = chrome.extension.getURL("images/henoheno.gif")
+                $('#OCRJPNtext').html("");
+                $('.OCRJPNresult').remove()
                 $('#OCRJPNtext').html('<img src=' + loader + '>');
             });
 
-        // not using this right now but it goes with the code at the bottom of the file.
-        $('#OCRJPNtest').click(function(){
-            takeScreenshot($('#OCRJPNocrwindow'), renderPreview)
-        });
+            
+
+            // not using this right now but it goes with the code at the bottom of the file.
+            $('#OCRJPNtest').click(function(){
+                takeScreenshot($('#OCRJPNocrwindow'), renderPreview)
+            });
 
         }
     }else if(request.greeting == "displayResults"){
-        console.log("display results");
-        $('#OCRJPNtext').html("");
         // this is what actually adds the results of the AJAX query to the info div.
-        console.log(request);
+        console.log("display results");
+        console.log(request.results)
         // don't parse the JSON--$.ajax did it for you
-        var candidates = request.results.candidates
-        var next_candidates = $('<div id="OCRJPNnextcandidates"></div>')
+        if( request.results.candidates.length > 0 ){
+            $('#OCRJPNtext').html("");
+            var candidates = request.results.candidates
 
-        for (var i = 0; i < candidates.length; i++) {
-            var characters = candidates[i]
-            // maybe make a span or something that has an ID and then put the 0 element in that span
-            // then you can do stuff with the other things.
-            var id = "chara" + i
-            var chara = $('<span id="' + id + '" class="OCRJPNresult"></span>')
-            
+            for (var i = 0; i < candidates.length; i++) {
+                var characters = candidates[i]
+                // maybe make a span or something that has an ID and then put the 0 element in that span
+                // then you can do stuff with the other things.
+                var id = "chara" + i
+                var chara = $('<span id="' + id + '" class="OCRJPNresult"></span>')
+                
+                var candidate_wrapper = $('<div id="candidateWrapper'+ i + '" class="candidateWrapper"></div>')
 
-            for (var j = 0; j < characters.length; j++) {
-                var spanny = $('<span id="'+ id + 'candidate'+ j + '" class="OCRJPNcandidate"></span>')
-                spanny.text(characters[j])
-                next_candidates.append(spanny)
+                for (var j = 1; j < characters.length; j++) {
+                    var candSpan = $('<span id="'+ id + 'candidate'+ j + '" class="OCRJPNcandidate"></span>')
+                    candSpan.text(characters[j])
+                    candSpan.click(swapChars)
+                    candidate_wrapper.append(candSpan)
+                };
+
+                chara.text(candidates[i][0])
+                
+                chara.click(function(){
+                    $('.candidateWrapper').css('display','none')
+                    id = this.id[5] //ugh this is so bad
+                    $('#candidateWrapper'+id).css('display', 'block')
+                })
+                $('#OCRJPNtext').append(chara);
+                $('#OCRJPNkanjiinfo').append(candidate_wrapper);
+                candidate_wrapper.css('left', $('#' + id).width() * i)
             };
+        }else{
+            console.log("this other thing happened")
+            $('#OCRJPNtext').html("Didn't find anything. Resize box and try again.");
+        }
 
-            chara.text(candidates[i][0])
-            chara.click(function(){
-                console.log("you clicked " + this.id );
-            })
-            $('#OCRJPNtext').append(chara);
-        };
-        $('#OCRJPNtext').append(next_candidates);
+
        
     }
         
   });
+
+swapChars = function(){
+    id = this.id[5]
+    swap = $('#chara'+id).text()
+    $('#chara'+id).text(this.innerHTML)
+    this.innerHTML = swap
+}
 
 // for debug purposes only
 function printCoords(){

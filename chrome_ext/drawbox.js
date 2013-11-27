@@ -9,7 +9,7 @@ $(document).ready(function() {
 
     $( "#OCRJPNdialog" ).dialog();
 
-    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNtext"></div></div>');
+    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNtext"></div></div></div>');
 
 
     $('body').append(info)
@@ -52,7 +52,7 @@ $(document).ready(function() {
             };
 
             chara.text(candidates[i][0])
-            
+
             chara.click(function(){
                 $('.candidateWrapper').css('display','none')
                 id = this.id[5] //ugh this is so bad
@@ -60,6 +60,9 @@ $(document).ready(function() {
             })
             $('#OCRJPNtext').append(chara);
             $('#OCRJPNtext').append(candidate_wrapper);
+
+            console.log( $('#' + id).width() )
+            candidate_wrapper.css('left', $('#' + id).width() * i)
         };
         
     });

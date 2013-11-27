@@ -1,4 +1,4 @@
-.OCRJPN{
+xt.OCRJPN{
     font-family: Arial;
 }
 
@@ -100,7 +100,7 @@
 .OCRJPN.ui-dialog{
     box-shadow: rgb(136, 136, 136) -5px 5px 15px;
     padding: 0;
-    z-index: 1000000000 t;
+    z-index: 1000000000;
     border-radius: 15px;
     border: 1px solid #888888;
 }
@@ -171,13 +171,17 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
 #OCRJPNtext{
     padding-top: 5px;
     clear: both;
-    font-size: 2em;
-    cursor: text;
     position: relative;
 }
 
+#OCRJPNresultwrapper{
+    font-size: 2em;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
 .OCRJPNresult{
-    cursor: pointer;
+    cursor: text;
 }
 
 .OCRJPNcandidate{
@@ -200,10 +204,6 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     left: 100%;
     right: -5px;
     bottom: -5px;
-}
-
-#candidateWrapper1{
-    left: 33px;
 }
 
 .OCRJPNresult::selection {

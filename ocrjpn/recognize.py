@@ -321,10 +321,6 @@ def search_db(input_imgs):
             if not ISLAND_MODE:
                 break
     
-        if len(sorted_scores) == 0:
-            #probably means it picked up a little dirt or something.....
-            image.show()
-
         adjust_these += sorted_scores[:3]
 
         adjusted_candidates = search_similar_chars(image, sorted(adjust_these, key=lambda score: score[1]))
@@ -336,9 +332,6 @@ def search_db(input_imgs):
 
     for row in return_vals:
         print row[0], row[1], row[2]
-
-    if not return_vals:
-        return "Didn't find anything. Resize box and try again."
         
     return return_vals
 
