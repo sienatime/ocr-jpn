@@ -44,6 +44,10 @@ def define():
 
     return db
 
+@app.route("/drawbox")
+def drawbox():
+    return render_template("drawbox.html")
+
 @app.route("/")
 def index():
     return render_template("index.html")

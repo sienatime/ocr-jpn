@@ -32,11 +32,10 @@ chrome.runtime.onMessage.addListener(
         $.ajax({
           type: "GET",
           url: "http://127.0.0.1:5000/define",
-          data: { lookup = request.lookup }
+          data: { lookup : request.lookup }
         }).done(function( msg ) {
                 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {greeting: "displayResults", results: msg}, function(response) {
-                      //this will only get run if you try to click the button before the page is done loading.
+                    chrome.tabs.sendMessage(tabs[0].id, {greeting: "gotDefinition", results: msg}, function(response) {
                     console.log("response")
                     });
                 });

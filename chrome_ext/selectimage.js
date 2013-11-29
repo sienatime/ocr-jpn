@@ -63,6 +63,15 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNkanjiinfo').mouseleave(function(){
                         $('.candidateWrapper').css('display','none');
                     })
+
+                    $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
+
+                    $('#OCRJPNdictionary').click(function(){
+                        var lookup = $('.OCRJPNresult').text()
+                        chrome.runtime.sendMessage( {greeting: "dictionary", lookup:lookup}, function(response) {
+                            $('#OCRJPNresultwrapper').append(response);
+                        });
+                    });
                 }
 
                 // aligns the info div to the ocr dialog.
@@ -70,6 +79,7 @@ chrome.runtime.onMessage.addListener(
                 loader = chrome.extension.getURL("images/henoheno.gif")
                 $('#OCRJPNtext').html("");
                 $('.OCRJPNresult').remove()
+                $('#OCRJPNdictionary').hide();
                 $('#OCRJPNtext').html('<img src=' + loader + '>');
             });
 
@@ -116,22 +126,29 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNtext').append(chara);
                     $('#OCRJPNkanjiinfo').append(candidate_wrapper);
                 candidate_wrapper.css('left', $('#' + id).width() * i)
-
-                $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
-
-                $('#OCRJPNdictionary').click(function(){
-                    var lookup = $('.OCRJPNresult').text()
-                    chrome.runtime.sendMessage( {greeting: "dictionary", lookup:lookup}, function(response) {
-                        $('#OCRJPNresultwrapper').append(response);
-                    });
-                });
-            };
+            }
+            $('#OCRJPNdictionary').show();
         }else{
             $('#OCRJPNtext').html("Didn't find anything. Resize box and try again.");
         }
+    }else if (request.greeting == "gotDefinition"){
+        console.log(request.results)
+        results = JSON.parse(request.results)
+        var definitions = ""
+        var def_ol = $('<ol></ol>')
+        for (i = 0; i < results.length; i++){
+            var entry = results[i].entry;
+            console.log(entry)
+                for (j = 0; j < entry.senses.length; j++){
+                    var english_list = entry.senses[j].glosses.en;
+                    def_ol.append($('<li>'+english_list.join(", ")+'</li>'));
+
+                }
+        }
+        console.log(def_ol)
 
 
-       
+        $('#OCRJPNresultwrapper').append(def_ol)
     }
         
   });
