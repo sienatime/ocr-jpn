@@ -195,7 +195,7 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     clear: both;
 }
 
-.OCRJPNresult{
+#OCRJPNtext, .OCRJPNresult{
     cursor: text;
 }
 
@@ -235,10 +235,18 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     font-size: 14px;
 }
 
+.OCRJPNmessage{
+    max-width: 150px;
+}
+
 .OCRJPNdictkanji, .OCRJPNreadings{
     font-size: 18px;
 }
 
 .OCRJPNdictkanji{
     border-top: 1px white solid;
+}
+
+.OCRJPNextrainfo{
+    font-size: 10px;
 }

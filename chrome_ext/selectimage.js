@@ -10,15 +10,15 @@ chrome.runtime.onMessage.addListener(
     if (request.greeting == "hello"){
 
         // if we have "closed" a dialog already, actually get rid of the elements (closing it just sets the display to none but it's hard to get it to come back.)
-        if ($('.OCRJPN').css("display") == "none" ){
-            $('#OCRJPNdialog').remove()
-            $('.OCRJPN').remove()
+        if ($('.OCRJPN.ui-dialog').css("display") == "none" ){
+            $('.OCRJPN.ui-dialog').remove();
+            $('#OCRJPNdialog').remove();
         }
 
         // if there is not already an open OCRJPN dialog, add one to the page.
         if( $('.OCRJPN.ui-dialog').length == 0 ){
 
-            d = $('<div id="OCRJPNdialog" title="OCR-JPN"><div id="OCRJPNdialogtext"><button id="OCRJPNocrThis"></button></div><div id="OCRJPNwindowwrapper"><div id="OCRJPNocrwindow"></div></div></div>');
+            d = $('<div id="OCRJPNdialog" title="OCR-JPN"><div id="OCRJPNdialogtext"><button id="OCRJPNocrThis" title="ocr selection"></button></div><div id="OCRJPNwindowwrapper"><div id="OCRJPNocrwindow"></div></div></div>');
 
             $('body').append(d);
 
@@ -48,6 +48,7 @@ chrome.runtime.onMessage.addListener(
                     });
                 }catch(e){
                     console.log("Lost connection to server.")
+                    $('#OCRJPNtext').html($('<div class="OCRJPNmessage">Lost connection to server. Try refreshing the page.</div>'));
                 }
 
                 // if there is not a kanjiinfo div open already, add one to the page for the response.
@@ -75,13 +76,10 @@ chrome.runtime.onMessage.addListener(
 
             });
 
-            
-
             // not using this right now but it goes with the code at the bottom of the file.
             $('#OCRJPNtest').click(function(){
                 takeScreenshot($('#OCRJPNocrwindow'), renderPreview)
             });
-
         }
     }else if(request.greeting == "displayResults"){
         // this is what actually adds the results of the AJAX query to the info div.
@@ -149,8 +147,27 @@ chrome.runtime.onMessage.addListener(
 
                 var def_ol = $('<ol class="OCRJPNdeflist"></ol>')
                     for (j = 0; j < entry.senses.length; j++){
+                        var misc_list = entry.senses[j].misc
+                        console.log(misc_list)
+                        var parts_of_speech = entry.senses[j].pos // list
+                        
                         var english_list = entry.senses[j].glosses.en;
-                        def_ol.append($('<li>'+english_list.join(", ")+'</li>'));
+                        var li = $('<li>'+english_list.join(", ")+'</li>')
+
+                        var extra_info = [];
+
+                        if( parts_of_speech ){
+                            extra_info = extra_info.concat(cleanExtraInfo(parts_of_speech));
+                        }
+                        if(misc_list){
+                            extra_info = extra_info.concat(cleanExtraInfo(misc_list));
+                        }
+                        console.log(extra_info)
+                        if (extra_info.length > 0){
+                            li.prepend('<span class="OCRJPNextrainfo">('+extra_info.join(", ")+') </span>')
+                        }
+                        
+                        def_ol.append(li);
                     }
                 $('#OCRJPNdictwrapper').append(def_ol)
             }
@@ -164,10 +181,19 @@ chrome.runtime.onMessage.addListener(
   });
 
 swapChars = function(){
-    id = this.id[5]
-    swap = $('#chara'+id).text()
+    var id = this.id[5]
+    var swap = $('#chara'+id).text()
     $('#chara'+id).text(this.innerHTML)
     this.innerHTML = swap
+}
+
+function cleanExtraInfo(l){
+    var clean_list = []
+    for (var i = 0; i < l.length; i++) {
+        var clean = l[i].split(/&|;/)[1]
+        clean_list.push(clean)
+    };
+    return clean_list
 }
 
 // for debug purposes only
