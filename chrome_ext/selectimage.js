@@ -83,12 +83,12 @@ chrome.runtime.onMessage.addListener(
         }
     }else if(request.greeting == "displayResults"){
         // this is what actually adds the results of the AJAX query to the info div.
-        console.log("display results");
-        console.log(request.results)
         // don't parse the JSON--$.ajax did it for you
         if( request.results.candidates.length > 0 ){
             $('#OCRJPNtext').html("");
+            $('.candidateWrapper').remove();
             var candidates = request.results.candidates
+            console.log(candidates)
 
             for (var i = 0; i < candidates.length; i++) {
                 var characters = candidates[i]
@@ -118,7 +118,6 @@ chrome.runtime.onMessage.addListener(
                 candidate_wrapper.css('left', $('#' + id).width() * i)
             };
         }else{
-            console.log("this other thing happened")
             $('#OCRJPNtext').html("Didn't find anything. Resize box and try again.");
         }
 
@@ -147,9 +146,6 @@ function printCoords(){
 function adjustInfoPane(){
     put_top = $('.OCRJPN.ui-dialog').offset().top + 'px'
     put_left = $('.OCRJPN.ui-dialog').offset().left + $('.OCRJPN.ui-dialog').width() + 20 + 'px'
-
-    console.log(put_top)
-    console.log(put_left)
 
     $('#OCRJPNkanjiinfo').css('top', put_top);
     $('#OCRJPNkanjiinfo').css('left', put_left);

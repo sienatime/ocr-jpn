@@ -6,7 +6,7 @@ def main():
     conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
     cur = conn.cursor()
 
-    cur.execute("SELECT code, img_path from characters where code = 26029 and font = 'gothic' and img_size='big'")
+    cur.execute("SELECT code, img_path from characters where code = 24618 and font = 'gothic' and img_size='big'")
     row1 = cur.fetchone()
 
     cur.execute("SELECT code, img_path FROM characters where font = 'gothic' and img_size = 'big';")
@@ -17,7 +17,7 @@ def main():
     test_code, test_path = row1
     test_img = Image.open(test_path).convert("L")
 
-    f = open('similarities_26029.txt', 'w')
+    f = open('similarities_24618.txt', 'w')
 
     for row in all_kanji:
         sim_code, img_path = row

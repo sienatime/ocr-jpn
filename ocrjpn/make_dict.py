@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import codecs
 import psycopg2
 import pdb
+import json
 
 conn = psycopg2.connect("dbname='ocrjpn' user='siena' host='localhost' password='unicorns'")
 cur = conn.cursor()
@@ -14,82 +15,106 @@ def no_tag_concat(list_tags):
     return ", ".join(list_tags)
 
 def main():
-    f = codecs.open("../kanjidic/test.xml", encoding='utf-8')
-    text = f.read()
+    f = codecs.open("../kanjidic/JMdict", encoding='utf-8')
+    print "opened file"
+    text = f.readlines()
+    print "read file"
 
-    soup = BeautifulSoup(text)
+    # soup = BeautifulSoup(text)
+    print "made soup"
 
-    # returns list of entries
-    entries = soup.find_all('entry')
+    
+    start = None
 
     counter = 0
-    for entry in entries:
-        counter += 1
-        keb = None  
-        if entry.keb:
-            keb = entry.find('keb').get_text()
 
-        taggy_rebs = entry.find_all('reb')
+    for i in range(3898731, len(text)):
+        if "<entry>" in text[i]:
 
-        rebs = no_tag_concat(taggy_rebs)
+            start = i
+        elif "</entry>" in text[i]:
+            end = i
 
-        cur.execute("INSERT INTO entries (keb, reb) VALUES (%s, %s) RETURNING id;",(keb, rebs))
-        entry_id = cur.fetchone()[0]
+            entry_list = text[start:end+1]
+            entry_string = ""
+            for elt in entry_list:
+                entry_string += elt.strip()
 
-        senses = entry.find_all('sense')
+            #process stuff
+            soup = BeautifulSoup(entry_string)
 
-        for sense in senses:
-            parts_of_speech = None
-            if sense.pos:
-                parts_of_speech = no_tag_concat(sense.find_all('pos'))
-            misc = None
-            if sense.misc:
-                misc = sense.misc.get_text()
+            entry = soup.entry
 
-            cur.execute("INSERT INTO senses (entry_id, parts_of_speech, misc) VALUES (%s, %s, %s) RETURNING id;",(entry_id, parts_of_speech, misc))
+            counter += 1
+            # maybe do the sense blob first so you can get the ID, the make as many entries rows as needed.
+            # find all kebs and rebs and make them unique lookup rows.
+            senses = entry.find_all('sense')
+            senses_blob = []
+
+            for sense in senses:
+                # make a JSON blob with the following structure
+                # senses is a list of objects
+                #   the objects can optionally have a list of parts_of_speech
+                #   optionally have list of misc
+                #   MUST have glosses obj where the keys are languages and the values are lists of strings
+                parts_of_speech = None
+                if sense.pos:
+                    parts_of_speech = [pos.get_text() for pos in sense.find_all('pos')]
+
+                misc = None
+                if sense.misc:
+                    misc = [misc.get_text() for misc in sense.find_all('misc')]
+
+                glosses = sense.find_all('gloss')
+                english = []
+                french = []
+                german = []
+                dutch = []
+                russian = []
+
+                for gloss in glosses:
+                    # pdb.set_trace()
+                    definition = gloss.get_text()
+
+                    lang = gloss.attrs.get('xml:lang')
+
+                    if lang == 'dut':
+                        dutch.append(definition)
+                    elif lang == 'ger':
+                        german.append(definition)
+                    elif lang == 'fre':
+                        french.append(definition)
+                    elif lang == 'rus':
+                        russian.append(definition)
+                    else:
+                        english.append(definition)
+
+                blob = {"glosses": {"en" : english, "nl" : dutch, "de" : german, "ru" : russian, "fr" : french}, "pos" : parts_of_speech, "misc" : misc}
+                senses_blob.append(blob)
+
+            cur.execute("INSERT INTO senses (blob) VALUES (%s) RETURNING id;",(json.dumps(senses_blob),))
             sense_id = cur.fetchone()[0]
 
-            # glosses = sense.find_all(attrs={"xml:lang": "dut"})
-            glosses = sense.find_all('gloss')
+            lookup = []
+            rebs = [reb.get_text() for reb in entry.find_all('reb')]
 
-            if len(glosses) == 0:
-                pdb.set_trace()
+            str_kanji = None
+            if entry.keb:
+                kebs = [keb.get_text() for keb in entry.find_all('keb')]
+                str_kanji = ", ".join(kebs)
+                lookup += kebs
 
-            for gloss in glosses:
-                # pdb.set_trace()
-                definition = gloss.get_text()
+            lookup += rebs
+            
+            str_readings = ", ".join(rebs)
 
-                lang = gloss.attrs.get('xml:lang')
+            for term in lookup:
+                cur.execute("INSERT INTO entries (lookup, kanji, readings, sense_id) VALUES (%s, %s, %s, %s)",(term, str_kanji, str_readings, sense_id))
 
-                if lang == 'dut':
-                    lang = 'nl'
-                elif lang == 'ger':
-                    lang = 'de'
-                elif lang == 'fre':
-                    lang = 'fr'
-                elif lang == 'rus':
-                    lang = 'ru'
-                else:
-                    lang = "en"
+            if counter % 1000 == 0:
+                print "committing", counter
+                conn.commit()
 
-                cur.execute("INSERT INTO glosses (sense_id, definition, lang) VALUES (%s, %s, %s);",(sense_id, definition, lang))
-        
-        if counter % 100 == 0:
-            print "commting", counter    
-            conn.commit()
-
-    # try inserting this into db
-
-    # 3 tables: entries, senses, glosses
-    # an entry can have many senses
-    # entry's reb (reading) can have many so let's just concatenate those too
-    # a sense can have many glosses
-
-    # concatenate pos (parts of speech) together because we don't care
-
-    # WATCH OUT for unicode
-
-
-
+    conn.commit()
 
 main()
