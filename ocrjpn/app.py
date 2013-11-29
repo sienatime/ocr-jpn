@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import create_image
 import pdb
 import json
+import model
 
 app = Flask(__name__)
 app.secret_key = "shhhhthisisasecret"
@@ -34,6 +35,14 @@ def make_image():
     #     final[ "results" + str(i) ] = results[i]
 
     return jsonify(candidates=results)
+
+@app.route("/define")
+def define():
+    lookup = request.args.get("lookup")
+
+    db = model.lookup(lookup)
+
+    return db
 
 @app.route("/")
 def index():

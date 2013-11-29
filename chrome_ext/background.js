@@ -28,6 +28,20 @@ chrome.runtime.onMessage.addListener(
             chrome.tabs.captureVisibleTab(null, null, function(dataUrl) {
                 sendResponse({ screenshotUrl: dataUrl });
             });
+    }else if (request.greeting == "dictionary"){
+        $.ajax({
+          type: "GET",
+          url: "http://127.0.0.1:5000/define",
+          data: { lookup = request.lookup }
+        }).done(function( msg ) {
+                chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {greeting: "displayResults", results: msg}, function(response) {
+                      //this will only get run if you try to click the button before the page is done loading.
+                    console.log("response")
+                    });
+                });
+        });
+        
     }
     // don't think this does anything right now either
     return true;

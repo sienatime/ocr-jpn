@@ -116,6 +116,15 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNtext').append(chara);
                     $('#OCRJPNkanjiinfo').append(candidate_wrapper);
                 candidate_wrapper.css('left', $('#' + id).width() * i)
+
+                $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
+
+                $('#OCRJPNdictionary').click(function(){
+                    var lookup = $('.OCRJPNresult').text()
+                    chrome.runtime.sendMessage( {greeting: "dictionary", lookup:lookup}, function(response) {
+                        $('#OCRJPNresultwrapper').append(response);
+                    });
+                });
             };
         }else{
             $('#OCRJPNtext').html("Didn't find anything. Resize box and try again.");
