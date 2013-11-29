@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener(
 
                 // if there is not a kanjiinfo div open already, add one to the page for the response.
                 if ( $('#OCRJPNkanjiinfo').length  == 0 ){
-                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div><div id="OCRJPNdictwrapper"></div></div></div>');
+                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only" role="button" aria-disabled="false" title="dictionary" id="OCRJPNdictionary"><span class="ui-button-icon-primary ui-icon ui-icon-book"></span><span class="ui-button-text">dictionary</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div><div id="OCRJPNdictwrapper"></div></div></div>');
                     $('body').append(info)
                     // the cancel lets you select the text that appears in the info div.
                     $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext" }); 
@@ -70,6 +70,7 @@ chrome.runtime.onMessage.addListener(
                 adjustInfoPane();
                 loader = chrome.extension.getURL("images/henoheno.gif")
                 $('#OCRJPNresultwrapper').html($("<div id='OCRJPNtext'><img src='" + loader + "'></div><div id=\"OCRJPNdictwrapper\"></div>"));
+                $('#OCRJPNdictionary').hide()
                 $('.OCRJPNresult').remove()
 
             });
@@ -86,6 +87,7 @@ chrome.runtime.onMessage.addListener(
         // this is what actually adds the results of the AJAX query to the info div.
         // don't parse the JSON--$.ajax did it for you
         if( request.results.candidates.length > 0 ){
+            $('#OCRJPNdictionary').show();
             $('#OCRJPNtext').html("");
             $('.candidateWrapper').remove();
             var candidates = request.results.candidates
@@ -118,7 +120,6 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNkanjiinfo').append(candidate_wrapper);
                 candidate_wrapper.css('left', $('#' + id).width() * i)
             }
-            $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
 
             $('#OCRJPNdictionary').click(function(){
                 var lookup = $('.OCRJPNresult').text()
@@ -130,6 +131,7 @@ chrome.runtime.onMessage.addListener(
             $('#OCRJPNtext').html($("<div class=\"OCRJPNmessage\">Didn't find anything. Resize box and try again.</div>"));
         }
     }else if (request.greeting == "gotDefinition"){
+
         $('#OCRJPNdictwrapper').html("");
         console.log(request.results)
         results = JSON.parse(request.results)

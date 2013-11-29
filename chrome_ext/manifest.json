@@ -22,5 +22,5 @@
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources":[ "images/henoheno.gif", "images/camera.png", "images/multiply.png" ]
+  "web_accessible_resources":[ "images/henoheno.gif", "images/camera.png", "images/multiply.png", "images/book3.png" ]
 }

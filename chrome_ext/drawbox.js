@@ -9,7 +9,7 @@ $(document).ready(function() {
 
     $( "#OCRJPNdialog" ).dialog();
 
-    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div></div></div>');
+    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only" role="button" aria-disabled="false" title="dictionary" id="OCRJPNdictionary"><span class="ui-button-icon-primary ui-icon ui-icon-book"></span><span class="ui-button-text">dictionary</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div><div id="OCRJPNdictwrapper"></div></div></div>');
 
 
     $('body').append(info)
@@ -66,7 +66,6 @@ $(document).ready(function() {
             candidate_wrapper.css('left', $('#' + id).width() * i)   
         }
 
-        $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
 
             $('#OCRJPNdictionary').click(function(){
                 var lookup = $('.OCRJPNresult').text();
