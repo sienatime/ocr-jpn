@@ -95,27 +95,31 @@ def threshold_image(im, avg):
 def crop_image(im, black_pixels):
     im_x, im_y = im.size
     # the values of black_pixels are tuples like (x, y) and have all the coordinates that are black in them.
-    upper = black_pixels[0][1] #this is the y value of the first black pixel
-    lower = black_pixels[-1][1] #this is the y value of the last black pixel
+    if len(black_pixels) > 0:
+        upper = black_pixels[0][1] #this is the y value of the first black pixel
+        lower = black_pixels[-1][1] #this is the y value of the last black pixel
 
-    #this is just initializing these variables. min_x MUST be smaller than the width of the image, and max_x MUST be bigger than 0.
-    min_x = im_x
-    max_x = 0
+        #this is just initializing these variables. min_x MUST be smaller than the width of the image, and max_x MUST be bigger than 0.
+        min_x = im_x
+        max_x = 0
 
-    #find the lowest and highest x value of black pixels
-    #could also probably sort this on the x values like I did in the scoring function, e.g. sort_by_x = sorted(black_pixels, key=lambda x: score[0]) 
-    for x, y in black_pixels:
-        if x < min_x:
-            min_x = x
-        elif x > max_x:
-            max_x = x
+        #find the lowest and highest x value of black pixels
+        #could also probably sort this on the x values like I did in the scoring function, e.g. sort_by_x = sorted(black_pixels, key=lambda x: score[0]) 
+        for x, y in black_pixels:
+            if x < min_x:
+                min_x = x
+            elif x > max_x:
+                max_x = x
 
-    # the crop is exclusive so that is why we +1 to the 2nd set of coordinates. should probably watch im for index im-of-bounds here...
-    box = (min_x, upper, max_x+1, lower+1)
+        # the crop is exclusive so that is why we +1 to the 2nd set of coordinates. should probably watch im for index im-of-bounds here...
+        box = (min_x, upper, max_x+1, lower+1)
 
-    region = im.crop(box)
+        region = im.crop(box)
 
-    return region
+        return region
+    else:
+        print "no black pixels found"
+        return im
 
 def process_image(im):
     pixel_data = list(im.getdata())

@@ -1,4 +1,4 @@
-xt.OCRJPN{
+.OCRJPN{
     font-family: Arial;
 }
 
@@ -160,6 +160,7 @@ div#OCRJPNkanjiinfo{
     z-index: 1000000000;
     cursor: move;
     background: #0083ca;
+    max-width: 300px;
 }
 
 div#OCRJPNkanjiinfo, .OCRJPNcandidate{
@@ -211,3 +212,20 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
 .OCRJPNresult::selection {
     background: #f9a01b; /* Safari */
     }
+
+.OCRJPNdeflist, .OCRJPNdeflist li{
+    list-style: decimal inside none;
+}
+
+#OCRJPNdictwrapper, .OCRJPNdeflist, .OCRJPNmessage{
+    text-align: left;
+    font-size: 14px;
+}
+
+.OCRJPNdictkanji, .OCRJPNreadings{
+    font-size: 18px;
+}
+
+.OCRJPNdictkanji{
+    border-top: 1px white solid;
+}

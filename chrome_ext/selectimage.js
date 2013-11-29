@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener(
 
                 // if there is not a kanjiinfo div open already, add one to the page for the response.
                 if ( $('#OCRJPNkanjiinfo').length  == 0 ){
-                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div></div></div>');
+                    info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div><div id="OCRJPNdictwrapper"></div></div></div>');
                     $('body').append(info)
                     // the cancel lets you select the text that appears in the info div.
                     $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext" }); 
@@ -64,23 +64,14 @@ chrome.runtime.onMessage.addListener(
                         $('.candidateWrapper').css('display','none');
                     })
 
-                    $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
-
-                    $('#OCRJPNdictionary').click(function(){
-                        var lookup = $('.OCRJPNresult').text()
-                        chrome.runtime.sendMessage( {greeting: "dictionary", lookup:lookup}, function(response) {
-                            $('#OCRJPNresultwrapper').append(response);
-                        });
-                    });
                 }
 
                 // aligns the info div to the ocr dialog.
                 adjustInfoPane();
                 loader = chrome.extension.getURL("images/henoheno.gif")
-                $('#OCRJPNtext').html("");
+                $('#OCRJPNresultwrapper').html($("<div id='OCRJPNtext'><img src='" + loader + "'></div><div id=\"OCRJPNdictwrapper\"></div>"));
                 $('.OCRJPNresult').remove()
-                $('#OCRJPNdictionary').hide();
-                $('#OCRJPNtext').html('<img src=' + loader + '>');
+
             });
 
             
@@ -127,28 +118,45 @@ chrome.runtime.onMessage.addListener(
                     $('#OCRJPNkanjiinfo').append(candidate_wrapper);
                 candidate_wrapper.css('left', $('#' + id).width() * i)
             }
-            $('#OCRJPNdictionary').show();
+            $("#OCRJPNresultwrapper").append($("<button id='OCRJPNdictionary'>Dictionary</button>"));
+
+            $('#OCRJPNdictionary').click(function(){
+                var lookup = $('.OCRJPNresult').text()
+                chrome.runtime.sendMessage( {greeting: "dictionary", lookup:lookup}, function(response) {
+                    $('#OCRJPNresultwrapper').append(response);
+                });
+            });
         }else{
-            $('#OCRJPNtext').html("Didn't find anything. Resize box and try again.");
+            $('#OCRJPNtext').html($("<div class=\"OCRJPNmessage\">Didn't find anything. Resize box and try again.</div>"));
         }
     }else if (request.greeting == "gotDefinition"){
+        $('#OCRJPNdictwrapper').html("");
         console.log(request.results)
         results = JSON.parse(request.results)
-        var definitions = ""
-        var def_ol = $('<ol></ol>')
-        for (i = 0; i < results.length; i++){
-            var entry = results[i].entry;
-            console.log(entry)
-                for (j = 0; j < entry.senses.length; j++){
-                    var english_list = entry.senses[j].glosses.en;
-                    def_ol.append($('<li>'+english_list.join(", ")+'</li>'));
+        
+        if (results.length > 0){
+            
+            for (i = 0; i < results.length; i++){
+                var entry = results[i].entry;
+                console.log(entry)
+                var kanji = entry.kanji
+                var readings = entry.readings
+                var nihongo = $('<div class="OCRJPNdictkanji">'+kanji+'</div><div class="OCRJPNreadings">'+readings+'</div>')
 
-                }
+                $('#OCRJPNdictwrapper').append(nihongo)
+
+                var def_ol = $('<ol class="OCRJPNdeflist"></ol>')
+                    for (j = 0; j < entry.senses.length; j++){
+                        var english_list = entry.senses[j].glosses.en;
+                        def_ol.append($('<li>'+english_list.join(", ")+'</li>'));
+                    }
+                $('#OCRJPNdictwrapper').append(def_ol)
+            }
+
+        }else{
+            $('#OCRJPNdictwrapper').html($('<div class="OCRJPNmessage">Didn\'t find anything in the dictionary.</div>'));
         }
-        console.log(def_ol)
-
-
-        $('#OCRJPNresultwrapper').append(def_ol)
+        
     }
         
   });

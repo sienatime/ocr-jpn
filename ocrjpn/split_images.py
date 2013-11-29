@@ -67,7 +67,6 @@ def split_images(im, direction):
         try:
             boxes.append( (split_ranges[-1][-1], start_y, im_x, end) )
         except(IndexError):
-            im.show()
             print split_ranges
             print "split ranges out of range"
 
@@ -83,8 +82,11 @@ def split_images(im, direction):
         for rng in split_ranges:
             boxes.append( (start_x, start_y, end, rng[0]) )
             start_y = rng[-1] + 1
-
-        boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
+        try:
+            boxes.append( ( start_x, split_ranges[-1][-1], end, im_y) )
+        except(IndexError):
+            print split_ranges
+            print "split ranges out of range"
 
 
     for box in boxes:

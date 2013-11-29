@@ -6,7 +6,7 @@ function openDialog(){
             //this will only get run if you try to click the button before the page is done loading.
             if (!response){
                 console.log("no response.")
-                $('#info').html("Loading...")
+                $('#info').html("Waiting for page...")
             }
         });
     });
