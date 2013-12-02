@@ -127,8 +127,6 @@ def process_image(im):
 
     #find the average value of the image (sum of all values/number of pixels) and subtract 20, for anti-aliasing. anything below this number becomes black (0), and anything above becomes white (255).
     avg = sum(pixel_data)/len(pixel_data) - THRESHOLD_OFFSET
-    print "AVG", avg
-
     out = resize_image(im, avg)
     thrs, black_pixels = threshold_image(out, avg)
 
@@ -235,6 +233,10 @@ def run_thru_kana(im):
 def search_similar_chars(im, candidates):
     #candidates is a list of scores, which are a tuple like (code, score)
     print candidates
+
+    if not candidates:
+        return []
+
     highest = candidates[0][0]
 
     already_searched = {}
@@ -283,6 +285,7 @@ def search_db(input_imgs):
 
     return_vals = []
     for image in input_imgs:
+        #image.show()
         im_black, im_white = find_islands(image)
 
         kana_scores = run_thru_kana(image)
@@ -311,6 +314,10 @@ def search_db(input_imgs):
         while final_score > 0.3:
             print "searching..."
             white_lower = im_white-island_range
+            while white_lower not in valid_white_vals:
+                #pick another one
+                print "not a valid number of white islands"
+                white_lower -= 1
             if white_lower <= 1:
                 print "GIVING UP"
                 break
@@ -335,8 +342,9 @@ def search_db(input_imgs):
     print_total_time()
 
     for row in return_vals:
-        print row[0], row[1], row[2]
-        
+        if row:
+            print row[0], row[1], row[2]
+
     return return_vals
 
 def print_time():

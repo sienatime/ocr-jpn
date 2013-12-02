@@ -27,8 +27,10 @@ def jsonning():
 def make_image():
     img_data = request.form.get("dataUrl")
     coords = [request.form.get("x1"), request.form.get("y1"), request.form.get("x2"), request.form.get("y2")]
-    results = create_image.img_from_string(img_data, coords)
-
+    try:
+        results = create_image.img_from_string(img_data, coords)
+    except:
+        results = None
     # final = {}
 
     # for i in range(len(results)):

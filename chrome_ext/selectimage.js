@@ -93,6 +93,11 @@ chrome.runtime.onMessage.addListener(
 
             for (var i = 0; i < candidates.length; i++) {
                 var characters = candidates[i]
+
+                if (characters.length == 0){
+                    $('#OCRJPNtext').html($("<div class=\"OCRJPNmessage\">Didn't find anything. Resize box and try again.</div>"));
+                    break;
+                }
                 // maybe make a span or something that has an ID and then put the 0 element in that span
                 // then you can do stuff with the other things.
                 var id = "chara" + i
