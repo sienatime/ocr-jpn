@@ -1,6 +1,6 @@
 # OCR-JPN
 
-OCR-JPN is a Chrome extension that lets you recognize Japanese characters in images you find around the web. You can then copy/paste the text into your favorite dictionary, or perform a lookup on the spot using a built-in implementation of JMdict: http://www.csse.monash.edu.au/~jwb/edict_doc.html.
+OCR-JPN is a Chrome extension that lets you recognize Japanese characters in images you find around the web. You can then copy/paste the text into your favorite dictionary, or perform a lookup on the spot using a built-in implementation of JMdict: http://www.csse.monash.edu.au/~jwb/edict_doc.html. OCR-JPN was built by Siena Aguayo as her final project at Hackbright Academy during the fall of 2013.
 
 ![demo of the OCR result](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot1.png)
 
@@ -12,21 +12,21 @@ The fantastic Chrome extension rikaikun https://chrome.google.com/webstore/detai
 
 ### OCR
 
-Once you click on the extension icon, a dialog window will open on the current page. The window is draggable and resizeable. Draw the window over the character(s) you wish to recognize, trying to get a clean crop (although it is forgiving if you catch a little extra of the characters next to, but not above or below, your selection). Next click the camera button.
+Once you click on the extension icon, a dialog window will open on the current page. The window is draggable and resizeable. Draw the window over the character(s) you wish to recognize, trying to get a clean crop (although it is forgiving if you catch a little extra of the characters next to, but not above or below, your selection). Next, click the camera button.
 
-This will send a screenshot of your tab to the server. Please note that no images from your session are saved to the server. The server then crops the image and performs several manipulations using PIL (Python Imaging Library) that resizes, thresholds, and crops the image to prepare it for comparison. The program then performs an analysis to count the number of unique negative spaces present in the thresholded image and uses that as a starting point in a database of aroud 3000 Japanese characters. The script will continue to search until it finds a "good enough" score, at which point it will compare the input image to characters that have been deemed similar to the "good enough" character.
+This will send a screenshot of your tab to the server. Please note that no images from your session are saved to the server. The server then crops the image and performs several manipulations using PIL (Python Imaging Library) that resize, threshold, and crop the image to prepare it for comparison. The program then performs an analysis to count the number of unique negative spaces present in the thresholded image and uses that as a starting point in a database of around 3000 Japanese characters. The script will continue to search until it finds a "good enough" score, at which point it will compare the input image to characters that have been deemed similar to the "good enough" character.
 
 OCR-JPN works best on Gothic-type fonts (bold and blocky instead of script-like or calligraphic).
 
 Once you get a result, you can click on each character to see the next two candidates returned from the server, in case there was a near miss.
 
-![demo of the next two candidates](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot2.png)
+![demo of the next two candidates](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot3.png)
 
 ### The dictionary
 
-Once you get a result back from the server, you can click the dictionary button to look up the word in the server's dictionary, which was implemented using JMdict from the University of Monash/Electronic Dictionary Research and Development Group. If the word is not in the dictionary, it will tell you. You can then copy/paste the definitions as you see fit.
+Once you get a result back from the server, you can click the dictionary button to look up the word in the server's dictionary. You can then copy/paste the definitions as you see fit.
 
-![demo of the dictionary lookup](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot3.png)
+![demo of the dictionary lookup](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot2.png)
 
 ## Acknowledgments
 
