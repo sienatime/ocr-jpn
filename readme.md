@@ -2,7 +2,7 @@
 
 OCR-JPN is a Chrome extension that lets you recognize Japanese characters in images you find around the web. You can then copy/paste the text into your favorite dictionary, or perform a lookup on the spot using a built-in implementation of JMdict: http://www.csse.monash.edu.au/~jwb/edict_doc.html.
 
-![demo of the OCR result]()
+![demo of the OCR result](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot1.png)
 
 ## Why?
 
@@ -20,13 +20,13 @@ OCR-JPN works best on Gothic-type fonts (bold and blocky instead of script-like 
 
 Once you get a result, you can click on each character to see the next two candidates returned from the server, in case there was a near miss.
 
-![demo of the next two candidates]()
+![demo of the next two candidates](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot2.png)
 
 ### The dictionary
 
 Once you get a result back from the server, you can click the dictionary button to look up the word in the server's dictionary, which was implemented using JMdict from the University of Monash/Electronic Dictionary Research and Development Group. If the word is not in the dictionary, it will tell you. You can then copy/paste the definitions as you see fit.
 
-![demo of the dictionary lookup]()
+![demo of the dictionary lookup](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot3.png)
 
 ## Acknowledgments
 
