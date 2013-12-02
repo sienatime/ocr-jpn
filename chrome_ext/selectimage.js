@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener(
                     info = $('<div id="OCRJPNkanjiinfo" class="OCRJPN"><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close" id="OCRJPNkanjiinfoclose"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only" role="button" aria-disabled="false" title="dictionary" id="OCRJPNdictionary"><span class="ui-button-icon-primary ui-icon ui-icon-book"></span><span class="ui-button-text">dictionary</span></button><div id="OCRJPNresultwrapper"><div id="OCRJPNtext"></div><div id="OCRJPNdictwrapper"></div></div></div>');
                     $('body').append(info)
                     // the cancel lets you select the text that appears in the info div.
-                    $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext" }); 
+                    $( "#OCRJPNkanjiinfo" ).draggable({ cancel: "#OCRJPNtext, #OCRJPNdictwrapper" }); 
                     // there's a close button on the info div.
                     $('#OCRJPNkanjiinfoclose').click(function(){
                         $(this).parent().remove()
@@ -84,7 +84,7 @@ chrome.runtime.onMessage.addListener(
     }else if(request.greeting == "displayResults"){
         // this is what actually adds the results of the AJAX query to the info div.
         // don't parse the JSON--$.ajax did it for you
-        if( request.results.candidates.length > 0 ){
+        if( request.results.candidates && request.results.candidates.length > 0 ){
             $('#OCRJPNdictionary').show();
             $('#OCRJPNtext').html("");
             $('.candidateWrapper').remove();
@@ -144,11 +144,16 @@ chrome.runtime.onMessage.addListener(
             for (i = 0; i < results.length; i++){
                 var entry = results[i].entry;
                 console.log(entry)
-                var kanji = entry.kanji
+                var nihongo = ''
+                if(entry.kanji){
+                    var kanji = entry.kanji
+                    nihongo += '<div class="OCRJPNdictkanji">'+kanji+'</div>';
+                }
+                
                 var readings = entry.readings
-                var nihongo = $('<div class="OCRJPNdictkanji">'+kanji+'</div><div class="OCRJPNreadings">'+readings+'</div>')
+                nihongo += '<div class="OCRJPNreadings">'+readings+'</div>';
 
-                $('#OCRJPNdictwrapper').append(nihongo)
+                $('#OCRJPNdictwrapper').append($(nihongo));
 
                 var def_ol = $('<ol class="OCRJPNdeflist"></ol>')
                     for (j = 0; j < entry.senses.length; j++){

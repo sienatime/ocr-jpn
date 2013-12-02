@@ -118,7 +118,6 @@ def crop_image(im, black_pixels):
 
         return region
     else:
-        print "no black pixels found"
         return im
 
 def process_image(im):

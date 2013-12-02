@@ -195,7 +195,7 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     clear: both;
 }
 
-#OCRJPNtext, .OCRJPNresult{
+#OCRJPNtext, .OCRJPNresult, #OCRJPNdictwrapper{
     cursor: text;
 }
 
@@ -222,17 +222,23 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     bottom: -5px;
 }
 
-.OCRJPNresult::selection {
-    background: #f9a01b; /* Safari */
+.OCRJPNresult::selection, #OCRJPNdictwrapper::selection, .OCRJPNdeflist li::selection, .OCRJPNdeflist li span::selection, .OCRJPNdictkanji::selection, .OCRJPNreadings::selection, #OCRJPNtext::selection {
+    background: rgb(0, 192, 214);
     }
 
 .OCRJPNdeflist, .OCRJPNdeflist li{
     list-style: decimal inside none;
 }
 
+.OCRJPNdeflist{
+    margin: 0;
+    padding: 0;
+}
+
 #OCRJPNdictwrapper, .OCRJPNdeflist, .OCRJPNmessage{
     text-align: left;
     font-size: 14px;
+    word-break: normal;
 }
 
 .OCRJPNmessage{
@@ -245,8 +251,13 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
 
 .OCRJPNdictkanji{
     border-top: 1px white solid;
+    padding-top: 3px;
 }
 
 .OCRJPNextrainfo{
     font-size: 10px;
+}
+
+.OCRJPNdeflist, #OCRJPNtext{
+    padding-bottom: 3px;
 }

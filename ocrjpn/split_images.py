@@ -12,7 +12,7 @@ def find_split_ranges(l):
             rng = l[slice_start:i+1]
 
             # okay let's be real. instead of just blindly accepting things, i need to maybe be like okay, what is the average width/height of the stuff that i just found? are there ones that are significantly less? if there are, i need to either ignore them, or smoosh them back together, which i feel like would be hard. especially since right now i have the blank spaces and not the characters themselves as my points of interest.
-            if len(rng) >= 2:
+            if len(rng) >= 1:
                 split_ranges.append( rng )
             slice_start = i+1
 
