@@ -7,6 +7,10 @@ import model
 app = Flask(__name__)
 app.secret_key = "shhhhthisisasecret"
 
+@app.route("/offline")
+def offline_mode():
+    return render_template("offlinemode.html")
+
 @app.route("/jsontest")
 def jsonning():
     results ={ 'results0': 

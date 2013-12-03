@@ -47,9 +47,6 @@
     height: 16px;
     left: 50%;
     margin-left: -8px;
-    /*background-image: url('chrome-extension://__MSG_@@extension_id__/jquery-ui-1.10.3.custom/css/no-theme/ui-icons_888888_256x240.png');*/
-    /* development only */
-    /*background-image: url('ui-icons_888888_256x240.png'); */
 }
 
 #OCRJPNocrThis{
@@ -58,9 +55,8 @@
 
 /* icon credit: http://sixrevisions.com/freebies/icons/375-retina-display-ready-icons/*/
 .OCRJPN .ui-icon-check{
-    /*background-position: -65px -145px;*/
     background: url("chrome-extension://__MSG_@@extension_id__/images/camera.png") no-repeat;
-    /*background: url("images/camera.png") no-repeat;*/
+    /*background: url("images/camera.png") no-repeat;*/ /* local only */
     background-size: 14px 14px;
     margin-left: -7px;
 }
@@ -72,9 +68,8 @@
 
 /* icon credit: http://sixrevisions.com/freebies/icons/375-retina-display-ready-icons/*/
 .OCRJPN .ui-icon-closethick {
-    /*background-position: -96px -128px;*/
     background: url("chrome-extension://__MSG_@@extension_id__/images/multiply.png") no-repeat;
-    /*background: url("images/multiply.png") no-repeat;*/
+    /*background: url("images/multiply.png") no-repeat;*/ /* local only */
     background-size: 16px 16px;
 }
 
@@ -83,9 +78,8 @@
 }
 
 .OCRJPN .ui-icon-book {
-    /*background-position: -96px -128px;*/
     background: url("chrome-extension://__MSG_@@extension_id__/images/book3.png") no-repeat;
-    /*background: url("images/book3.png") no-repeat;*/
+    /*background: url("images/book3.png") no-repeat;*/ /* local only */
     background-size: 16px 16px;
 }
 
@@ -113,7 +107,7 @@
 .OCRJPN.ui-dialog{
     box-shadow: rgb(136, 136, 136) -5px 5px 15px;
     padding: 0;
-    z-index: 1000000000;
+    z-index: 99991; /* for demo. this is under rikaikun. */
     border-radius: 15px;
     border: 1px solid #888888;
 }
@@ -136,8 +130,6 @@
     width: 100%;
     text-align: left;
     font-size: 18px;
-    /* lines up veritcally with ocrwindow */
-    /*padding-left: 8px;*/
 }
 
 .OCRJPN.ui-dialog #OCRJPNdialogtext{
@@ -170,7 +162,7 @@ div#OCRJPNkanjiinfo{
     left: 20px;
     color: white;
     font-family: Arial;
-    z-index: 1000000000;
+    z-index: 99991; /* for demo. this is under rikaikun. */
     cursor: move;
     background: #0083ca;
 }

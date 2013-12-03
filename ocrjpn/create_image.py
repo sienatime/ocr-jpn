@@ -15,10 +15,7 @@ def img_from_string(imgdata, coords):
     tempimg = cStringIO.StringIO(imgstr.decode('base64'))
 
     im = Image.open(tempimg)
-    # im.show()
     cropped = im.crop(box)
-    cropped.show()
-    # pdb.set_trace()
 
     return recognize.ocr_image(cropped)
 

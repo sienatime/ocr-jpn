@@ -6,7 +6,7 @@ import os
 
 def ocr(image_name):
     results = recognize.ocr_image(open_image(image_name))
-    # final_answer = result[0][0] + result[1][0]
+    
     final_answer = ""
     for result in results:
         final_answer += result[0]
@@ -26,10 +26,6 @@ def test_jouchi():
 
 def test_kaigaishucchou():
     assert_equal(ocr("yoji.bmp"), u"海外出張")
-
-# doesn't pass
-# def test_jouchi():
-#     assert_equal(ocr("science.bmp"), u"サイエンス")
 
 def open_image(image_name):
     base_path = "../test_images/"

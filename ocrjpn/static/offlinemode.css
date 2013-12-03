@@ -1,0 +1,23 @@
+body{
+    background: white;
+    margin: 0;
+    padding: 0;
+}
+
+#screenshot{
+    background: url('asahiscreenshotcrop.png') no-repeat;
+    margin: 0 auto;
+    width: 1024px;
+}
+
+#text{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+}
+
+html,body,#screenshot{
+    height: 100%;
+   
+}
