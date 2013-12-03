@@ -173,7 +173,7 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
     if mode:
         if mode == "smkanji":
             char_type = "kanji"
-        else:
+        elif mode == "kanji" or mode == "hiragana" or mode =="katakana":
             char_type = mode
 
     if verbose:
@@ -182,7 +182,7 @@ def run_thru_templates_db(im, island_range, white_lower, im_white):
 
     if char_type != 'kanji':
         # if it's the kana, just search through those by themselves, it's fast enough. umm should i return both fonts for the kana? not sure.
-        cur.execute("SELECT code, img_path from characters where char_type = %s and img_size = %s;", (char_type))
+        cur.execute("SELECT code, img_path from characters where char_type = %s and img_size = %s;", (char_type, 'big'))
     else:
         global ISLAND_MODE
         if ISLAND_MODE:
@@ -365,9 +365,7 @@ def print_total_time():
     print "\nTotal time:", sum(TOTAL_TIME)
 
 def ocr_image(inp):
-
     im = inp.convert("L")
-
     im_x, im_y = im.size
 
     if sample_corners(im):

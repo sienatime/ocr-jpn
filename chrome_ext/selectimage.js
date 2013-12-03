@@ -147,13 +147,16 @@ chrome.runtime.onMessage.addListener(
                 var nihongo = ''
                 if(entry.kanji){
                     var kanji = entry.kanji
-                    nihongo += '<div class="OCRJPNdictkanji">'+kanji+'</div>';
+                    nihongo += '<div class="OCRJPNdictkanji OCRJPNentryseparator">'+kanji+'</div><div class="OCRJPNreadings';
+                }else{
+                    nihongo += '<div class="OCRJPNreadings OCRJPNentryseparator'
                 }
                 
                 var readings = entry.readings
-                nihongo += '<div class="OCRJPNreadings">'+readings+'</div>';
+                nihongo += '">'+readings+'</div>';
 
                 $('#OCRJPNdictwrapper').append($(nihongo));
+                $('#OCRJPNdictwrapper').css("min-width","100px");
 
                 var def_ol = $('<ol class="OCRJPNdeflist"></ol>')
                     for (j = 0; j < entry.senses.length; j++){

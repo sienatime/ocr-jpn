@@ -173,7 +173,6 @@ div#OCRJPNkanjiinfo{
     z-index: 1000000000;
     cursor: move;
     background: #0083ca;
-    max-width: 300px;
 }
 
 div#OCRJPNkanjiinfo, .OCRJPNcandidate{
@@ -235,6 +234,10 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     padding: 0;
 }
 
+#OCRJPNdictwrapper{
+    max-width: 200px;
+}
+
 #OCRJPNdictwrapper, .OCRJPNdeflist, .OCRJPNmessage{
     text-align: left;
     font-size: 14px;
@@ -249,9 +252,10 @@ div#OCRJPNkanjiinfo, .OCRJPNcandidate{
     font-size: 18px;
 }
 
-.OCRJPNdictkanji{
+.OCRJPNentryseparator, .OCRJPNmessage{
     border-top: 1px white solid;
     padding-top: 3px;
+    margin-top: 3px;
 }
 
 .OCRJPNextrainfo{

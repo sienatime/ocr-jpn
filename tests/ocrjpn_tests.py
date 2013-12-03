@@ -4,73 +4,33 @@ from ocrjpn import recognize
 from PIL import Image
 import os
 
-def setup():
-    print "SETUP!"
+def ocr(image_name):
+    results = recognize.ocr_image(open_image(image_name))
+    # final_answer = result[0][0] + result[1][0]
+    final_answer = ""
+    for result in results:
+        final_answer += result[0]
+    return final_answer
 
-def teardown():
-    print "TEAR DOWN!"
+def test_nihon():
+    assert_equal(ocr("nihon.bmp"), u"日本")
 
-def test_simple_islands():
-    isl = open_image("isl.bmp")
-    assert_equal( recognize.find_islands(isl), (2, 2) )
-    isl2 = open_image("isl2.bmp")
-    assert_equal( recognize.find_islands(isl2), (3, 1) )
-    perp = open_image("perp.bmp")
-    assert_equal( recognize.find_islands(perp), (1, 2) )
+def test_asahi():
+    assert_equal(ocr("asahishinbun3.bmp"), u"朝日新聞")
 
-def test_simple_radicals():
-    hitoben = open_image("hitoben.bmp")
-    assert_equal( recognize.find_islands(hitoben), (1, 3) )
-    lid = open_image("lid.bmp")
-    assert_equal( recognize.find_islands(lid), (1, 2) )
-    i1 = open_image("i1.bmp")
-    assert_equal( recognize.find_islands(i1), (1, 2) )
-    i3 = open_image("i3.bmp")
-    assert_equal( recognize.find_islands(i3), (1, 2) )
-    i4 = open_image("i4.bmp")
-    assert_equal( recognize.find_islands(i4), (1, 2) )
-    i5 = open_image("i5.bmp")
-    assert_equal( recognize.find_islands(i5), (1, 2) )
+def test_daigaku():
+    assert_equal(ocr("daigaku.bmp"), u"大学")
 
-def test_sm_kanji():
-    smtada = open_template("smtada.bmp")
-    assert_equal( recognize.find_islands(smtada), (3, 5) )
+def test_jouchi():
+    assert_equal(ocr("jouchiclean.bmp"), u"上智")
 
-    smi = open_template("smi.bmp")
-    assert_equal( recognize.find_islands(smi), (4, 3) )
+def test_kaigaishucchou():
+    assert_equal(ocr("yoji.bmp"), u"海外出張")
 
-def test_big_kanji():
-    list_of_files = os.listdir("templates/test/")
+# doesn't pass
+# def test_jouchi():
+#     assert_equal(ocr("science.bmp"), u"サイエンス")
 
-    tada = open_template(list_of_files[2])
-    assert_equal( recognize.find_islands(tada), (3, 5) )
-
-    i = open_template(list_of_files[3])
-    assert_equal( recognize.find_islands(i), (4, 3) )
-
-def test_all_test_kanji():
-    correct = [(4, 3),
-            (3, 5),
-            (3, 5),
-            (4, 3),
-            (3, 4),
-            (3, 3),
-            (2, 3),
-            (2, 4),
-            (7, 2),
-            (6, 3),
-            (6, 7)]
-
-    list_of_files = os.listdir("templates/test/")
-
-    test_answers = [recognize.find_islands(Image.open("templates/test/"+img).convert("L")) for img in list_of_files ]
-
-    assert_equal( test_answers, correct )
-
-def open_image(str):
-    path = "test_images/" + str
-    return Image.open(path).convert("L")
-
-def open_template(str):
-    path = "templates/test/" + str
-    return Image.open(path).convert("L")
+def open_image(image_name):
+    base_path = "../test_images/"
+    return Image.open(base_path + image_name)
