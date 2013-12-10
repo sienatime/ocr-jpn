@@ -2,7 +2,6 @@ from PIL import Image
 import re
 import cStringIO
 import recognize
-import pdb
 
 def img_from_string(imgdata, coords):
     imgstr = re.search(r'base64,(.*)', imgdata).group(1)

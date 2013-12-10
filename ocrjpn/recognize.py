@@ -6,7 +6,6 @@ from sys import argv
 from islands import find_islands
 import psycopg2
 from os import listdir
-import pdb
 from time import clock
 import split_images
 
@@ -69,8 +68,6 @@ def resize_image(im, avg):
         size = AVG_BIG_TEMPLATE_HEIGHT, AVG_BIG_TEMPLATE_HEIGHT
         im.thumbnail(size, Image.ANTIALIAS)
         out = im
-
-    # pdb.set_trace()
 
     return out
 
