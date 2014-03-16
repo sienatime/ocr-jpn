@@ -1,12 +1,14 @@
 # OCR-JPN
 
-OCR-JPN is a Chrome extension that lets you recognize Japanese characters in images you find around the web. You can then copy/paste the text into your favorite dictionary, or perform a lookup on the spot using a built-in implementation of JMdict: http://www.csse.monash.edu.au/~jwb/edict_doc.html. OCR-JPN was built by Siena Aguayo as her final project at Hackbright Academy during the fall of 2013.
+OCR-JPN is a Chrome extension that lets you recognize Japanese characters in images you find around the web. You can then copy/paste the text into your favorite dictionary, or perform a lookup on the spot using a built-in implementation of [JMdict](http://www.csse.monash.edu.au/~jwb/edict_doc.html). OCR-JPN was built by Siena Aguayo as her final project at Hackbright Academy during the fall of 2013.
+
+[Watch me explain how it works on Vimeo!](http://vimeo.com/84154682)
 
 ![demo of the OCR result](https://raw.github.com/dotheastro/ocr-jpn/master/screenshot1.png)
 
 ## Why?
 
-The fantastic Chrome extension rikaikun https://chrome.google.com/webstore/detail/rikaikun/jipdnfibhldikgcjhfnomkfpcebammhp lets you hover over Japanese text and get a dictionary popup. However, this doesn't work on images. One way to solve this problem is to use OCR. OCR stands for Optical Character Recognition and is used to turn pictures containing representations of text into actual text that can be manipulated like text and not an image. The goal of OCR-JPN is to turn Japanese text on images into actual text so that you can look it up in a dictionary or copy/paste it into a flashcard program or notes.
+The fantastic Chrome extension [rikaikun](https://chrome.google.com/webstore/detail/rikaikun/jipdnfibhldikgcjhfnomkfpcebammhp) lets you hover over Japanese text and get a dictionary popup. However, this doesn't work on images. One way to solve this problem is to use OCR. OCR stands for Optical Character Recognition and is used to turn pictures containing representations of text into actual text that can be manipulated like text and not an image. The goal of OCR-JPN is to turn Japanese text on images into actual text so that you can look it up in a dictionary or copy/paste it into a flashcard program or notes.
 
 ## How does it work?
 
