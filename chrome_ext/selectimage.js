@@ -40,6 +40,13 @@ chrome.runtime.onMessage.addListener(
                 var y1 = $('#OCRJPNocrwindow').offset().top - $('body').scrollTop() + parseInt( $('#OCRJPNocrwindow').css('border-top') );
                 var x2 = $('#OCRJPNocrwindow').offset().left + $('#OCRJPNocrwindow').width();
                 var y2 = $('#OCRJPNocrwindow').offset().top + $('#OCRJPNocrwindow').height() - $('body').scrollTop();
+
+                if ( isHighDensity() ){
+                    x1 = x1 * 2;
+                    y1 = y1 * 2 + 1;
+                    x2 = x2 * 2;
+                    y2 = y2 * 2;
+                }
                 
                 // sends a message to background.js to take the screenshot.
                 try{
@@ -224,6 +231,11 @@ function adjustInfoPane(){
 
     $('#OCRJPNkanjiinfo').css('top', put_top);
     $('#OCRJPNkanjiinfo').css('left', put_left);
+}
+
+//from http://stackoverflow.com/questions/19689715/what-is-the-best-way-to-detect-retina-support-on-a-device-using-javascript
+function isHighDensity(){
+    return ((window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3));
 }
 
 // this code is adapted from http://louisrli.github.io/blog/2013/01/16/javascript-canvas-screenshot/#.Uo-pbsR018E. I am not actually using it though. But I kept it just in case.
